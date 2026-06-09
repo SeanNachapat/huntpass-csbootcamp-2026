@@ -11,36 +11,36 @@ export default function AddDistrictCard({ huntId }: { huntId: string }) {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 flex flex-col justify-center items-center text-center hover:bg-zoo-amber-50 hover:border-zoo-amber-400 hover:text-zoo-amber-600 transition min-h-[300px] text-slate-400 group shadow-sm hover:shadow-md cursor-pointer w-full"
+        className="bg-white/40 rounded-2xl border-2 border-dashed border-paper-border flex flex-col justify-center items-center text-center hover:bg-white hover:border-seal-gold hover:text-seal-gold transition min-h-[300px] text-muted-sepia group shadow-sm hover:-translate-y-1 cursor-pointer w-full"
       >
-        <div className="bg-white p-4 rounded-full mb-3 shadow-sm border border-slate-100 group-hover:scale-110 group-hover:bg-zoo-amber-500 group-hover:text-white transition-all">
+        <div className="bg-passport-ivory paper-texture p-4 rounded-full mb-4 shadow-sm border border-paper-border group-hover:scale-110 group-hover:border-seal-gold transition-all">
           <Plus size={36} />
         </div>
-        <span className="font-bold text-lg">Add New District</span>
+        <span className="font-playfair font-bold text-lg text-passport-navy group-hover:text-seal-gold">Add New District</span>
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-zpd-navy/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 text-left">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
-              <h3 className="font-bold text-zpd-navy flex items-center gap-2">
-                <MapPin size={18} className="text-zoo-amber-500" /> New District
+        <div className="fixed inset-0 bg-passport-navy/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 text-left">
+          <div className="bg-passport-ivory paper-texture rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-seal-gold/50">
+            <div className="flex justify-between items-center p-5 border-b border-paper-border bg-white/40">
+              <h3 className="font-playfair font-bold text-passport-navy text-xl flex items-center gap-2">
+                <MapPin size={20} className="text-seal-gold" /> New District
               </h3>
-              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-600 bg-white rounded-full p-1 border border-slate-200"><X size={16}/></button>
+              <button onClick={() => setIsOpen(false)} className="text-muted-sepia hover:text-sepia-ink bg-white rounded-full p-1.5 border border-paper-border shadow-sm"><X size={16}/></button>
             </div>
-            <form action={async (fd) => { await addCheckpoint(fd); setIsOpen(false); }} className="p-5 flex flex-col gap-4">
+            <form action={async (fd) => { await addCheckpoint(fd); setIsOpen(false); }} className="p-6 flex flex-col gap-4">
               <input type="hidden" name="huntId" value={huntId} />
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">District Name</label>
-                <input type="text" name="name" className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zoo-amber-500 outline-none transition" required />
+                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">District Name</label>
+                <input type="text" name="name" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Emoji Icon</label>
-                <input type="text" name="icon" placeholder="e.g. 🏢" className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zoo-amber-500 outline-none transition" />
+                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Emoji Icon</label>
+                <input type="text" name="icon" placeholder="e.g. 🏢" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
               </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200 transition">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2.5 bg-zoo-amber-500 text-white rounded-lg text-sm font-bold hover:bg-zoo-amber-600 transition shadow-sm">Add District</button>
+              <div className="flex gap-3 mt-4">
+                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm">Add District</button>
               </div>
             </form>
           </div>

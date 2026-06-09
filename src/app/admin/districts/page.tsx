@@ -1,8 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
-import { addCheckpoint } from '@/app/actions';
-import { MapPin } from 'lucide-react';
+import { MapPin, ShieldCheck } from 'lucide-react';
 import DistrictCard from '@/components/DistrictCard';
 import AddDistrictCard from '@/components/AddDistrictCard';
 
@@ -25,22 +24,22 @@ export default async function DistrictsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold text-white flex items-center gap-3 mb-2 drop-shadow-md">
-          <MapPin className="text-zoo-amber-400" size={32} />
+        <h1 className="text-3xl font-playfair font-bold text-passport-navy flex items-center gap-3 mb-2 drop-shadow-sm">
+          <ShieldCheck className="text-seal-gold" size={32} />
           Districts & Officers
         </h1>
-        <p className="text-slate-200 font-medium drop-shadow">Manage checkpoints and assign ZPD officers to scan recruits.</p>
+        <p className="text-muted-sepia font-sarabun text-sm tracking-wide">Manage checkpoints and assign ZPD officers to scan recruits.</p>
       </div>
 
       {hunts.map(hunt => (
-        <div key={hunt.id} className="bg-white rounded-[2rem] shadow-2xl p-6 lg:p-8 border border-slate-200 backdrop-blur-md">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-zpd-navy">{hunt.name}</h2>
+        <div key={hunt.id} className="bg-passport-ivory paper-texture rounded-2xl shadow-xl p-6 lg:p-8 border border-paper-border">
+          <div className="mb-8 border-b border-seal-gold/30 pb-4">
+            <h2 className="text-2xl font-playfair font-bold text-passport-navy">{hunt.name}</h2>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {hunt.checkpoints.map(cp => (
-              <DistrictCard key={cp.id} cp={cp} />
+            {hunt.checkpoints.map((cp, index) => (
+              <DistrictCard key={cp.id} cp={cp} index={index} />
             ))}
             
             {/* Add New District Card */}
@@ -50,8 +49,8 @@ export default async function DistrictsPage() {
       ))}
       
       {hunts.length === 0 && (
-        <div className="text-center p-12 bg-white rounded-3xl border-dashed border-2 border-slate-300">
-          <p className="text-slate-500 font-medium">No cases created yet.</p>
+        <div className="text-center p-12 bg-passport-ivory paper-texture rounded-3xl border-dashed border-2 border-seal-gold/50">
+          <p className="font-sarabun text-muted-sepia font-medium italic">No cases created yet.</p>
         </div>
       )}
     </div>

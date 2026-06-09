@@ -5,71 +5,80 @@ export interface HouseConfig {
   textClass: string;
   borderClass: string;
   image: string;
+  emoji: string;
 }
 
 export const houses: Record<string, HouseConfig> = {
   'ควาย (Bogo)': {
     name: 'ควายคิดโค้ดครบคืนคอมค้างคาคณะ',
     themeColor: 'ขาว',
-    bgClass: 'bg-white',
-    textClass: 'text-slate-800',
-    borderClass: 'border-slate-300',
-    image: '/assets/Bogo.PNG'
+    bgClass: 'bg-[#FFFFFF]',
+    textClass: 'text-passport-navy',
+    borderClass: 'border-[#FFFFFF]',
+    image: '/assets/Bogo.PNG',
+    emoji: '🐃'
   },
   'สิงโต (Lionheart)': {
     name: 'สิงโตโสกัง',
     themeColor: 'เหลือง',
-    bgClass: 'bg-yellow-400',
-    textClass: 'text-yellow-900',
-    borderClass: 'border-yellow-500',
-    image: '/assets/Lionheart.PNG'
+    bgClass: 'bg-[#F1C40F]',
+    textClass: 'text-white',
+    borderClass: 'border-[#F1C40F]',
+    image: '/assets/Lionheart.PNG',
+    emoji: '🦁'
   },
   'งู (Gary)': {
     name: 'งูสิงจิงกะเบล',
     themeColor: 'ฟ้า',
-    bgClass: 'bg-cyan-400',
-    textClass: 'text-cyan-900',
-    borderClass: 'border-cyan-500',
-    image: '/assets/Gary.PNG'
+    bgClass: 'bg-[#3498DB]',
+    textClass: 'text-white',
+    borderClass: 'border-[#3498DB]',
+    image: '/assets/Gary.PNG',
+    emoji: '🐍'
   },
   'จิ้งจอกทะเลทราย (Finnick)': {
     name: 'จิ้งจายทะเลสอก',
     themeColor: 'แดง',
-    bgClass: 'bg-red-500',
-    textClass: 'text-red-50',
-    borderClass: 'border-red-600',
-    image: '/assets/Finnick.PNG'
+    bgClass: 'bg-[#E74C3C]',
+    textClass: 'text-white',
+    borderClass: 'border-[#E74C3C]',
+    image: '/assets/Finnick.PNG',
+    emoji: '🦊'
   },
   'แกะ (Bellwether)': {
     name: 'แกะอ้วนชวนซิ่ง',
     themeColor: 'ชมพู',
-    bgClass: 'bg-pink-400',
-    textClass: 'text-pink-900',
-    borderClass: 'border-pink-500',
-    image: '/assets/Bellwether.PNG'
+    bgClass: 'bg-[#FF69B4]',
+    textClass: 'text-white',
+    borderClass: 'border-[#FF69B4]',
+    image: '/assets/Bellwether.PNG',
+    emoji: '🐑'
   },
   'กาเซลล์ (Gazelle)': {
     name: 'กาเซลล์กาเซียกอนซาเลซ',
     themeColor: 'ม่วง',
-    bgClass: 'bg-purple-500',
-    textClass: 'text-purple-50',
-    borderClass: 'border-purple-600',
-    image: '/assets/Gazelle.PNG'
+    bgClass: 'bg-[#9B59B6]',
+    textClass: 'text-white',
+    borderClass: 'border-[#9B59B6]',
+    image: '/assets/Gazelle.PNG',
+    emoji: '🦌'
   },
   'สล็อต (Flash)': {
     name: 'สลอธหน้าสล๋อนนั่งสะเหรี่ยงใส่โสร่งเล่นสไลม์',
     themeColor: 'เทา',
-    bgClass: 'bg-slate-400',
-    textClass: 'text-slate-900',
-    borderClass: 'border-slate-500',
-    image: '/assets/Flash.PNG'
+    bgClass: 'bg-[#95A5A6]',
+    textClass: 'text-white',
+    borderClass: 'border-[#95A5A6]',
+    image: '/assets/Flash.PNG',
+    emoji: '🦥'
   },
   'เสือดาว (Clawhauser)': {
     name: 'เสืออ้วนนอนกิน',
     themeColor: 'ส้ม',
-    bgClass: 'bg-orange-400',
-    textClass: 'text-orange-900',
-    borderClass: 'border-orange-500',
-    image: '/assets/Clawhauser.PNG'
+    bgClass: 'bg-[#E67E22]',
+    textClass: 'text-white',
+    borderClass: 'border-[#E67E22]',
+    image: '/assets/Clawhauser.PNG',
+    emoji: '🐆'
   }
 };

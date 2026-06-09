@@ -1,50 +1,125 @@
 @import "tailwindcss";
 
 :root {
-  --background: #eff6ff; /* zoo-blue-50 */
-  --overlay-color: rgba(239, 246, 255, 0.85);
-  --foreground: #172554; /* zpd-navy */
+  --background: #0F1E3D;
+  --foreground: #2C2416;
 }
 
 @theme inline {
-  --color-zoo-blue-50: #eff6ff;
-  --color-zoo-blue-100: #dbeafe;
-  --color-zoo-blue-500: #3b82f6;
-  --color-zoo-blue-600: #2563eb;
-  --color-zoo-blue-700: #1d4ed8;
-  --color-zoo-blue-900: #1e3a8a;
-  
-  --color-zoo-amber-50: #fffbeb;
-  --color-zoo-amber-100: #fef3c7;
-  --color-zoo-amber-500: #f59e0b;
-  --color-zoo-amber-600: #d97706;
-  
-  --color-zoo-gold-400: #fbbf24;
-  --color-zoo-gold-500: #f59e0b;
-  
-  --color-zpd-navy: #172554;
+  --color-passport-navy: #1B3A6B;
+  --color-passport-ivory: #F5F0E8;
+  --color-ink-red: #C0392B;
+  --color-seal-gold: #C9A84C;
+  --color-ink-navy: #2C3E50;
+  --color-verified-green: #1A6B3C;
+  --color-deep-night: #0F1E3D;
+  --color-sepia-ink: #2C2416;
+  --color-muted-sepia: #8B7355;
+  --color-paper-border: #D4C9B0;
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-nunito);
-}
+  --color-district-ice: #4A90D9;
+  --color-district-desert: #E67E22;
+  --color-district-jungle: #27AE60;
+  --color-district-lavender: #8E44AD;
+  --color-district-amber: #F39C12;
+  --color-district-teal: #16A085;
+  --color-district-gold: #C9A84C;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a; /* darker blue/slate */
-    --overlay-color: rgba(15, 23, 42, 0.85);
-    --foreground: #f8fafc;
+  --font-playfair: var(--font-playfair), serif;
+  --font-sarabun: var(--font-sarabun), sans-serif;
+  --font-sans: var(--font-sarabun), sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
+
+  /* Animations */
+  --animate-stamp-slam: stamp-slam 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  --animate-passport-slide: passport-slide 500ms ease-out forwards;
+  --animate-viewfinder-pulse: viewfinder-pulse 2s infinite;
+  --animate-scan-sweep: scan-sweep 3s infinite linear;
+  --animate-slot-float: slot-float 3s ease-in-out infinite;
+
+  @keyframes stamp-slam {
+    0% { transform: scale(2.5); opacity: 0; filter: saturate(200%); }
+    60% { transform: scale(0.92); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; filter: saturate(100%); }
+  }
+
+  @keyframes passport-slide {
+    0% { transform: translateY(60px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes viewfinder-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes scan-sweep {
+    0% { top: 0%; }
+    100% { top: 100%; }
+  }
+
+  @keyframes slot-float {
+    0%, 100% { transform: translateY(-3px); }
+    50% { transform: translateY(3px); }
+  }
+  
+  @keyframes wiggle {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+  }
+  
+  @keyframes press-spin {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.97); }
+    100% { transform: scale(0.97) rotate(360deg); }
   }
 }
 
 @layer base {
   body {
     background-color: var(--background);
-    background-image: linear-gradient(var(--overlay-color), var(--overlay-color)), url('/assets/Background.png');
+    background-image: url('/assets/Background.png');
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
     background-attachment: fixed;
     color: var(--foreground);
   }
+}
+
+.paper-texture {
+  position: relative;
+  background-color: var(--color-passport-ivory);
+}
+.paper-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  filter: url(#paper-grain);
+  z-index: 10;
+}
+.stamp-edge {
+  filter: url(#ink-bleed);
+}
+.font-playfair {
+  font-family: var(--font-playfair);
+}
+.font-sarabun {
+  font-family: var(--font-sarabun);
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-muted-sepia); 
+  border-radius: 10px;
+  opacity: 0.5;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sepia-ink); 
 }

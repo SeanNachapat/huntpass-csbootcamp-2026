@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Kanit } from "next/font/google";
+import { Playfair_Display, Sarabun } from "next/font/google";
 import "./globals.css";
 
-const kanit = Kanit({
+const playfair = Playfair_Display({
+  weight: ['400', '600', '700', '800', '900'],
+  variable: "--font-playfair",
+  subsets: ["latin"],
+});
+
+const sarabun = Sarabun({
   weight: ['300', '400', '500', '600', '700'],
-  variable: "--font-primary",
+  variable: "--font-sarabun",
   subsets: ["latin", "thai"],
 });
 
@@ -20,7 +26,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning className={`${kanit.variable} font-primary min-h-full flex flex-col`}>{children}</body>
+      <body suppressHydrationWarning className={`${playfair.variable} ${sarabun.variable} font-sans min-h-full flex flex-col`}>
+        {/* SVG Defs for effects */}
+        <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
+          <defs>
+            <filter id="paper-grain">
+              <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
+              <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.08 0" />
+            </filter>
+            <filter id="ink-bleed">
+              <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="noise" />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+        </svg>
+        {children}
+      </body>
     </html>
   );
 }
