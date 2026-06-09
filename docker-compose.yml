@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: zoostamp
+      POSTGRES_PASSWORD: zoostamppassword
+      POSTGRES_DB: zoostamp
+    ports:
+      - "5432:5432"
+    volumes:
+      - zoostamp_pgdata:/var/lib/postgresql/data
+
+volumes:
+  zoostamp_pgdata:

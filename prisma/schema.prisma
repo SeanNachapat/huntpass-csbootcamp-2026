@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Hunt {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  status      String       @default("draft") // draft | active | closed
+  createdAt   DateTime     @default(now())
+  checkpoints Checkpoint[]
+  participants Participant[]
+}
+
+model Checkpoint {
+  id            String   @id @default(uuid())
+  huntId        String
+  name          String
+  zootopiaIcon  String?
+  order         Int?     @default(0)
+  hunt          Hunt     @relation(fields: [huntId], references: [id], onDelete: Cascade)
+  stamps        Stamp[]
+  officers      Staff[]
+}
+
+model Participant {
+  id            String   @id @default(uuid())
+  huntId        String
+  name          String
+  surname       String
+  nickname      String
+  house         String
+  username      String   @unique
+  password      String
+  qrToken       String   @unique
+  registeredAt  DateTime @default(now())
+  hunt          Hunt     @relation(fields: [huntId], references: [id], onDelete: Cascade)
+  stamps        Stamp[]
+}
+
+model Staff {
+  id            String      @id @default(uuid())
+  checkpointId  String?
+  displayName   String
+  username      String      @unique
+  password      String
+  sessionToken  String      @unique
+  role          String      @default("officer") // officer | chief
+  checkpoint    Checkpoint? @relation(fields: [checkpointId], references: [id], onDelete: SetNull)
+  stampsGiven   Stamp[]
+}
+
+model Stamp {
+  id            String      @id @default(uuid())
+  participantId String
+  checkpointId  String
+  officerId     String
+  stampedAt     DateTime    @default(now())
+  
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  checkpoint    Checkpoint  @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  officer       Staff       @relation(fields: [officerId], references: [id], onDelete: Cascade)
+
+  @@unique([participantId, checkpointId])
+}
