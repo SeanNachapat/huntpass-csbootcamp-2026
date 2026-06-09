@@ -25,11 +25,11 @@ export default async function AdminDashboardOverview() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold text-zpd-navy flex items-center gap-3 mb-2">
-          <LayoutDashboard className="text-zoo-blue-500" size={32} />
+        <h1 className="text-3xl font-extrabold text-white flex items-center gap-3 mb-2 drop-shadow-md">
+          <LayoutDashboard className="text-zoo-blue-400" size={32} />
           Dashboard Overview
         </h1>
-        <p className="text-slate-500 font-medium">Welcome back, Chief Bogo. Here is the current status of the precinct.</p>
+        <p className="text-slate-200 font-medium drop-shadow">Welcome back, Chief Bogo. Here is the current status of the precinct.</p>
       </div>
 
       {hunts.map(hunt => {

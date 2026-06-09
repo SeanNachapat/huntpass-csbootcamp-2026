@@ -2,6 +2,7 @@
 
 :root {
   --background: #eff6ff; /* zoo-blue-50 */
+  --overlay-color: rgba(239, 246, 255, 0.85);
   --foreground: #172554; /* zpd-navy */
 }
 
@@ -31,6 +32,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0f172a; /* darker blue/slate */
+    --overlay-color: rgba(15, 23, 42, 0.85);
     --foreground: #f8fafc;
   }
 }
@@ -38,22 +40,11 @@
 @layer base {
   body {
     background-color: var(--background);
-    color: var(--foreground);
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    background-image: url('/assets/Background.png');
+    background-image: linear-gradient(var(--overlay-color), var(--overlay-color)), url('/assets/Background.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.25;
-    pointer-events: none;
+    background-attachment: fixed;
+    color: var(--foreground);
   }
 }

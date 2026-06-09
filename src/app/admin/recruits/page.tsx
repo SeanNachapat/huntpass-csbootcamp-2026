@@ -25,11 +25,11 @@ export default async function RecruitsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold text-zpd-navy flex items-center gap-3 mb-2">
-          <Users className="text-pink-500" size={32} />
+        <h1 className="text-3xl font-extrabold text-white flex items-center gap-3 mb-2 drop-shadow-md">
+          <Users className="text-pink-400" size={32} />
           Recruits Management
         </h1>
-        <p className="text-slate-500 font-medium">Add, configure, or remove Zootopia bootcamp recruits.</p>
+        <p className="text-slate-200 font-medium drop-shadow">Add, configure, or remove Zootopia bootcamp recruits.</p>
       </div>
 
       {hunts.map(hunt => (

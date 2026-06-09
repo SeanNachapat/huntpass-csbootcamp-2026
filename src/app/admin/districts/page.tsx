@@ -25,11 +25,11 @@ export default async function DistrictsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold text-zpd-navy flex items-center gap-3 mb-2">
-          <MapPin className="text-zoo-amber-500" size={32} />
+        <h1 className="text-3xl font-extrabold text-white flex items-center gap-3 mb-2 drop-shadow-md">
+          <MapPin className="text-zoo-amber-400" size={32} />
           Districts & Officers
         </h1>
-        <p className="text-slate-500 font-medium">Manage checkpoints and assign ZPD officers to scan recruits.</p>
+        <p className="text-slate-200 font-medium drop-shadow">Manage checkpoints and assign ZPD officers to scan recruits.</p>
       </div>
 
       {hunts.map(hunt => (
