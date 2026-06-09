@@ -37,8 +37,8 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
       {/* Add Single Modal */}
       {isAddOpen && (
         <div className="fixed inset-0 bg-zpd-navy/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in-95 duration-200 text-left">
+            <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
               <h3 className="font-bold text-zpd-navy flex items-center gap-2">
                 <Users size={18} className="text-pink-500" /> Register Recruit
               </h3>
@@ -90,8 +90,8 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
       {/* Bulk Import Modal */}
       {isImportOpen && (
         <div className="fixed inset-0 bg-zpd-navy/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in-95 duration-200 text-left">
+            <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
               <h3 className="font-bold text-zpd-navy flex items-center gap-2">
                 <Upload size={18} className="text-zoo-blue-500" /> Bulk Import Recruits
               </h3>

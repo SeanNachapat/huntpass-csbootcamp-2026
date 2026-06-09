@@ -88,15 +88,6 @@ export default async function AdminDashboardOverview() {
               </div>
             </div>
             
-            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-              <h3 className="font-bold text-zpd-navy mb-2 flex items-center gap-2">
-                <Activity size={20} className="text-slate-400" />
-                System Logs
-              </h3>
-              <p className="text-sm text-slate-500">
-                The hunt is currently {hunt.status}. There are {totalStamps} stamps collected across {totalRecruits} recruits.
-              </p>
-            </div>
           </div>
         );
       })}

@@ -5,6 +5,7 @@ import { setSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import crypto from 'crypto';
 import { revalidatePath } from 'next/cache';
+import { read, utils } from 'xlsx';
 
 // Join flow is disabled since Admin seeds users directly.
 
@@ -28,7 +29,10 @@ export async function unifiedLogin(formData: FormData) {
 
   // 2. Check Officer
   const officer = await prisma.staff.findFirst({
-    where: { username, password: hashedPassword }
+    where: { 
+      username, 
+      OR: [{ password: hashedPassword }, { password }]
+    }
   });
 
   if (officer) {
@@ -38,7 +42,10 @@ export async function unifiedLogin(formData: FormData) {
 
   // 3. Check Recruit
   const recruit = await prisma.participant.findFirst({
-    where: { username, password: hashedPassword }
+    where: { 
+      username, 
+      OR: [{ password: hashedPassword }, { password }]
+    }
   });
 
   if (recruit) {
@@ -60,13 +67,12 @@ export async function assignOfficer(formData: FormData) {
   }
 
   const sessionToken = crypto.randomBytes(16).toString('hex');
-  const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
   await prisma.staff.create({
     data: {
       displayName,
       username,
-      password: hashedPassword,
+      password,
       checkpointId,
       sessionToken,
       role: 'officer'
@@ -120,7 +126,6 @@ export async function addRecruit(formData: FormData) {
   }
 
   const qrToken = crypto.randomBytes(16).toString('hex');
-  const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
   await prisma.participant.create({
     data: {
@@ -130,7 +135,7 @@ export async function addRecruit(formData: FormData) {
       nickname,
       house,
       username,
-      password: hashedPassword,
+      password,
       qrToken
     }
   });
@@ -138,16 +143,92 @@ export async function addRecruit(formData: FormData) {
   revalidatePath('/admin');
 }
 
+export async function updateRecruit(formData: FormData) {
+  const recruitId = formData.get('recruitId') as string;
+  const name = formData.get('name') as string;
+  const surname = formData.get('surname') as string;
+  const nickname = formData.get('nickname') as string;
+  const house = formData.get('house') as string;
+  const username = formData.get('username') as string;
+  const password = formData.get('password') as string;
+
+  if (!recruitId || !name || !surname || !nickname || !house || !username) {
+    throw new Error('All fields except password are required');
+  }
+
+  const dataToUpdate: any = {
+    name,
+    surname,
+    nickname,
+    house,
+    username,
+  };
+
+  if (password) {
+    dataToUpdate.password = password;
+  }
+
+  await prisma.participant.update({
+    where: { id: recruitId },
+    data: dataToUpdate,
+  });
+
+  revalidatePath('/admin/recruits');
+}
+
 export async function removeRecruit(formData: FormData) {
   const recruitId = formData.get('recruitId') as string;
 
   if (!recruitId) throw new Error('Recruit ID is required');
 
-  await prisma.participant.delete({
-    where: { id: recruitId }
+  await prisma.participant.delete({ where: { id: recruitId } });
+  revalidatePath('/admin/recruits');
+}
+
+export async function bulkImportRecruits(formData: FormData) {
+  const huntId = formData.get('huntId') as string;
+  const file = formData.get('file') as File;
+  
+  if (!huntId || !file) throw new Error('Missing required fields');
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  
+  let rawData: any[] = [];
+  
+  if (file.name.endsWith('.json')) {
+    const text = buffer.toString('utf-8');
+    rawData = JSON.parse(text);
+  } else {
+    const workbook = read(buffer, { type: 'buffer' });
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    rawData = utils.sheet_to_json(worksheet);
+  }
+
+  const recruitsToCreate = rawData.map((row: any) => {
+    if (!row.name || !row.surname || !row.nickname || !row.house || !row.username || !row.password) {
+      throw new Error(`Missing required fields in row: ${JSON.stringify(row)}`);
+    }
+
+    const qrToken = crypto.randomBytes(32).toString('hex');
+
+    return {
+      huntId,
+      name: String(row.name),
+      surname: String(row.surname),
+      nickname: String(row.nickname),
+      house: String(row.house),
+      username: String(row.username),
+      password: String(row.password),
+      qrToken,
+    };
   });
 
-  revalidatePath('/admin');
+  await prisma.participant.createMany({
+    data: recruitsToCreate,
+  });
+
+  revalidatePath('/admin/recruits');
 }
 
 export async function updateOfficer(formData: FormData) {
@@ -163,7 +244,7 @@ export async function updateOfficer(formData: FormData) {
   const data: any = { displayName, username };
   
   if (password) {
-    data.password = crypto.createHash('sha256').update(password).digest('hex');
+    data.password = password;
   }
 
   await prisma.staff.update({

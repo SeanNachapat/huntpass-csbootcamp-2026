@@ -14,7 +14,7 @@ export const houses: Record<string, HouseConfig> = {
     bgClass: 'bg-white',
     textClass: 'text-slate-800',
     borderClass: 'border-slate-300',
-    image: '/assets/IMG_0488.PNG'
+    image: '/assets/Bogo.PNG'
   },
   'สิงโต (Lionheart)': {
     name: 'สิงโตโสกัง',
@@ -22,7 +22,7 @@ export const houses: Record<string, HouseConfig> = {
     bgClass: 'bg-yellow-400',
     textClass: 'text-yellow-900',
     borderClass: 'border-yellow-500',
-    image: '/assets/IMG_0489.PNG'
+    image: '/assets/Lionheart.PNG'
   },
   'งู (Gary)': {
     name: 'งูสิงจิงกะเบล',
@@ -30,7 +30,7 @@ export const houses: Record<string, HouseConfig> = {
     bgClass: 'bg-cyan-400',
     textClass: 'text-cyan-900',
     borderClass: 'border-cyan-500',
-    image: '/assets/IMG_0498.PNG'
+    image: '/assets/Gary.PNG'
   },
   'จิ้งจอกทะเลทราย (Finnick)': {
     name: 'จิ้งจายทะเลสอก',
@@ -38,7 +38,7 @@ export const houses: Record<string, HouseConfig> = {
     bgClass: 'bg-red-500',
     textClass: 'text-red-50',
     borderClass: 'border-red-600',
-    image: '/assets/IMG_0499.PNG'
+    image: '/assets/Finnick.PNG'
   },
   'แกะ (Bellwether)': {
     name: 'แกะอ้วนชวนซิ่ง',
@@ -46,7 +46,7 @@ export const houses: Record<string, HouseConfig> = {
     bgClass: 'bg-pink-400',
     textClass: 'text-pink-900',
     borderClass: 'border-pink-500',
-    image: '/assets/IMG_0500.PNG'
+    image: '/assets/Bellwether.PNG'
   },
   'กาเซลล์ (Gazelle)': {
     name: 'กาเซลล์กาเซียกอนซาเลซ',
@@ -54,7 +54,7 @@ export const houses: Record<string, HouseConfig> = {
     bgClass: 'bg-purple-500',
     textClass: 'text-purple-50',
     borderClass: 'border-purple-600',
-    image: '/assets/IMG_0501.PNG'
+    image: '/assets/Gazelle.PNG'
   },
   'สล็อต (Flash)': {
     name: 'สลอธหน้าสล๋อนนั่งสะเหรี่ยงใส่โสร่งเล่นสไลม์',
@@ -62,7 +62,7 @@ export const houses: Record<string, HouseConfig> = {
     bgClass: 'bg-slate-400',
     textClass: 'text-slate-900',
     borderClass: 'border-slate-500',
-    image: '/assets/IMG_0502.PNG'
+    image: '/assets/Flash.PNG'
   },
   'เสือดาว (Clawhauser)': {
     name: 'เสืออ้วนนอนกิน',
@@ -70,6 +70,6 @@ export const houses: Record<string, HouseConfig> = {
     bgClass: 'bg-orange-400',
     textClass: 'text-orange-900',
     borderClass: 'border-orange-500',
-    image: '/assets/IMG_0503.PNG'
+    image: '/assets/Clawhauser.PNG'
   }
 };
