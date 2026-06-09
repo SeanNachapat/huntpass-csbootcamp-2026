@@ -32,7 +32,11 @@ export default async function Dashboard() {
   }
 
   // Generate QR Code data URL
-  const qrDataUrl = await QRCode.toDataURL(participant.qrToken, {
+  const qrData = JSON.stringify({
+    participantId: participant.id,
+    huntId: participant.huntId
+  });
+  const qrDataUrl = await QRCode.toDataURL(qrData, {
     width: 300,
     margin: 2,
     color: {
@@ -50,13 +54,13 @@ export default async function Dashboard() {
   const houseConfig = houses[participant.house] || houses['ควาย (Bogo)']; // fallback to Bogo
 
   return (
-    <div className={`flex flex-col min-h-screen ${houseConfig.bgClass} bg-opacity-20 transition-colors duration-500`}>
+    <div className="flex flex-col min-h-screen bg-transparent transition-colors duration-500 relative">
       {/* Decorative Background */}
       <div className={`absolute top-0 left-0 w-full h-96 ${houseConfig.bgClass} opacity-10 rounded-b-[100%] pointer-events-none -z-10`}></div>
 
       <header className="bg-white/80 backdrop-blur-md p-4 shadow-sm flex justify-between items-center sticky top-0 z-10 border-b border-white/50">
         <div className="flex items-center gap-2">
-          <ShieldCheck className={houseConfig.textClass} size={24} />
+          <img src="/assets/Logo.png" alt="HuntPass Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
           <span className={`font-black text-xl ${houseConfig.textClass}`}>HuntPass</span>
         </div>
         <Link href="/" className="text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 transition">

@@ -33,7 +33,7 @@ export default async function DistrictsPage() {
       </div>
 
       {hunts.map(hunt => (
-        <div key={hunt.id} className="bg-white rounded-3xl shadow-sm p-6 border-t-4 border-zoo-amber-500">
+        <div key={hunt.id} className="bg-white rounded-[2rem] shadow-2xl p-6 lg:p-8 border border-slate-200 backdrop-blur-md">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-zpd-navy">{hunt.name}</h2>
           </div>

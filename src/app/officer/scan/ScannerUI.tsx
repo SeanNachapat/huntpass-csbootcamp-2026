@@ -14,55 +14,67 @@ export default function ScannerUI() {
   const [avatar, setAvatar] = useState<string>('');
   
   useEffect(() => {
-    // Initialize scanner
-    const scanner = new Html5QrcodeScanner("reader", {
-      fps: 10,
-      qrbox: { width: 250, height: 250 },
-      aspectRatio: 1.0,
-    }, false);
+    let isMounted = true;
 
-    scannerRef.current = scanner;
+    // Use a small timeout to bypass React 18 StrictMode's rapid double-mount.
+    // This prevents the scanner from initializing twice simultaneously and duplicating the video.
+    const timeoutId = setTimeout(() => {
+      if (!isMounted) return;
 
-    scanner.render(async (decodedText) => {
-      // Pause scanner while processing
-      scanner.pause(true);
-      
-      try {
-        const data = JSON.parse(decodedText);
+      const scanner = new Html5QrcodeScanner("reader", {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+      }, false);
+
+      scannerRef.current = scanner;
+
+      scanner.render(async (decodedText) => {
+        // Pause scanner while processing
+        scanner.pause(true);
         
-        // Call API
-        const res = await fetch('/api/stamp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
+        try {
+          const data = JSON.parse(decodedText);
+          
+          // Call API
+          const res = await fetch('/api/stamp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
 
-        const result = await res.json();
+          const result = await res.json();
 
-        if (res.ok) {
-          setStatus('success');
-          setParticipantName(result.participantName);
-          setAvatar(result.speciesAvatar);
-          setMessage('Stamp recorded successfully!');
-        } else if (result.error === 'Already stamped') {
-          setStatus('already_stamped');
-          setParticipantName(result.participantName);
-          setMessage(`Already stamped on ${new Date(result.stampedAt).toLocaleTimeString()}`);
-        } else {
+          if (res.ok) {
+            setStatus('success');
+            setParticipantName(result.participantName);
+            setAvatar(result.speciesAvatar);
+            setMessage('Stamp recorded successfully!');
+          } else if (result.error === 'Already stamped') {
+            setStatus('already_stamped');
+            setParticipantName(result.participantName);
+            setMessage(`Already stamped on ${new Date(result.stampedAt).toLocaleTimeString()}`);
+          } else {
+            setStatus('error');
+            setMessage(result.error || 'Invalid QR code.');
+          }
+
+        } catch (err) {
           setStatus('error');
-          setMessage(result.error || 'Invalid QR code.');
+          setMessage('Unrecognized QR code format.');
         }
-
-      } catch (err) {
-        setStatus('error');
-        setMessage('Unrecognized QR code format.');
-      }
-    }, (error) => {
-      // ignore scanning errors during active scan
-    });
+      }, (error) => {
+        // ignore scanning errors during active scan
+      });
+    }, 100);
 
     return () => {
-      scanner.clear().catch(console.error);
+      isMounted = false;
+      clearTimeout(timeoutId);
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error);
+        scannerRef.current = null;
+      }
     };
   }, []);
 

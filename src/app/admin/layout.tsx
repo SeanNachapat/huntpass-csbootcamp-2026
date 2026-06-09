@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Sidebar (Desktop) */}
       <aside className="w-64 bg-zpd-navy text-white flex flex-col shadow-xl z-20 hidden md:flex shrink-0">
         <div className="p-6 flex items-center gap-3 border-b border-white/10">
-          <ShieldCheck className="text-zoo-gold-500" size={32} />
+          <img src="/assets/Logo.png" alt="HuntPass Logo" className="w-8 h-8 object-contain" />
           <span className="font-bold text-xl leading-tight">Chief Bogo<br/>Portal</span>
         </div>
         
@@ -47,7 +47,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <header className="md:hidden bg-zpd-navy text-white p-4 shadow-md flex flex-col gap-3 z-20 shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="text-zoo-gold-500" />
+              <img src="/assets/Logo.png" alt="HuntPass Logo" className="w-6 h-6 object-contain" />
               <span className="font-bold">Bogo Portal</span>
             </div>
             <Link href="/" className="text-xs text-red-300">Exit</Link>

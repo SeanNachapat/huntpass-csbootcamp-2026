@@ -22,10 +22,10 @@ export default async function OfficerScanPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-zpd-navy text-white">
+    <div className="flex flex-col min-h-screen bg-zpd-navy/90 text-white relative">
       <header className="bg-zoo-blue-900 p-4 shadow-md flex justify-between items-center sticky top-0 z-10 border-b-2 border-zoo-gold-500">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="text-zoo-gold-500" />
+          <img src="/assets/Logo.png" alt="HuntPass Logo" className="w-6 h-6 object-contain" />
           <span className="font-bold text-lg hidden sm:inline">Scanner: {officer.checkpoint.name}</span>
           <span className="font-bold text-lg sm:hidden">{officer.checkpoint.name}</span>
         </div>
