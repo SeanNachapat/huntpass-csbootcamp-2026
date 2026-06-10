@@ -7,6 +7,7 @@ import { Shield, Eye, EyeOff } from 'lucide-react';
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   return (
     <div 
@@ -35,11 +36,20 @@ export default function LoginForm() {
 
           <div className="w-full h-px bg-seal-gold/30 mb-8 relative z-10"></div>
           
+          {errorMsg && (
+            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-200 text-sm text-center font-sarabun z-20 relative animate-in fade-in zoom-in-95">
+              {errorMsg}
+            </div>
+          )}
+
           <form 
             action={async (fd) => {
               setIsSubmitting(true);
-              await unifiedLogin(fd);
-              // reset if it failed and didn't redirect
+              setErrorMsg('');
+              const res = await unifiedLogin(fd);
+              if (res?.error) {
+                setErrorMsg(res.error);
+              }
               setIsSubmitting(false);
             }} 
             className="space-y-4 relative z-10"

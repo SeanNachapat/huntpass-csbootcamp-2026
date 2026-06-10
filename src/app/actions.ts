@@ -13,7 +13,7 @@ export async function unifiedLogin(formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
-  if (!username || !password) throw new Error('Username and Password required');
+  if (!username || !password) return { error: 'Username and Password required' };
 
   const ADMIN_USER = process.env.ADMIN_USER || 'admin';
   const ADMIN_PASS = process.env.ADMIN_PASS || 'password123';
@@ -53,7 +53,7 @@ export async function unifiedLogin(formData: FormData) {
     redirect('/dashboard');
   }
 
-  throw new Error('Invalid credentials');
+  return { error: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
 }
 
 export async function assignOfficer(formData: FormData) {
