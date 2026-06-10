@@ -68,3 +68,10 @@ model Stamp {
 
   @@unique([participantId, checkpointId])
 }
+
+model Announcement {
+  id        String   @id @default(uuid())
+  message   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

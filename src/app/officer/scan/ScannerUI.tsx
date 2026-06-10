@@ -7,7 +7,15 @@ import { houses } from '@/lib/houses';
 
 type ScanStatus = 'scanning' | 'success' | 'error' | 'already_stamped';
 
-export default function ScannerUI({ checkpointName }: { checkpointName?: string }) {
+export default function ScannerUI({ 
+  checkpointName, 
+  checkpointIcon = '📍', 
+  checkpointColor = '#C9A84C' 
+}: { 
+  checkpointName?: string, 
+  checkpointIcon?: string, 
+  checkpointColor?: string 
+}) {
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const [status, setStatus] = useState<ScanStatus>('scanning');
   const [message, setMessage] = useState<string>('');
@@ -87,15 +95,27 @@ export default function ScannerUI({ checkpointName }: { checkpointName?: string 
         <div id="reader" className="w-full h-full border-none [&>div]:border-none [&>video]:object-cover"></div>
         
         {/* Animated Bracket Overlay */}
-        <div className="absolute inset-0 pointer-events-none z-10 animate-viewfinder-pulse p-4">
-          <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-seal-gold/80 rounded-tl-lg"></div>
-          <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-seal-gold/80 rounded-tr-lg"></div>
-          <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-seal-gold/80 rounded-bl-lg"></div>
-          <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-seal-gold/80 rounded-br-lg"></div>
+        <div className="absolute inset-0 pointer-events-none z-10 animate-viewfinder-pulse p-4" style={{ color: checkpointColor }}>
+          <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-current rounded-tl-lg opacity-80"></div>
+          <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-current rounded-tr-lg opacity-80"></div>
+          <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-current rounded-bl-lg opacity-80"></div>
+          <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-current rounded-br-lg opacity-80"></div>
+          
+          <div className="absolute top-2 left-2 text-xl opacity-50">{checkpointIcon}</div>
+          <div className="absolute top-2 right-2 text-xl opacity-50">{checkpointIcon}</div>
+          <div className="absolute bottom-2 left-2 text-xl opacity-50">{checkpointIcon}</div>
+          <div className="absolute bottom-2 right-2 text-xl opacity-50">{checkpointIcon}</div>
         </div>
 
         {/* Scan Line */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-seal-gold/60 shadow-[0_0_12px_4px_rgba(201,168,76,0.6)] z-20 animate-scan-sweep"></div>
+        <div 
+          className="absolute top-0 left-0 w-full h-1 z-20 animate-scan-sweep" 
+          style={{ 
+            backgroundColor: checkpointColor, 
+            boxShadow: `0 0 12px 4px ${checkpointColor}99`,
+            opacity: 0.6 
+          }}
+        ></div>
       </div>
 
       {status === 'scanning' && (
@@ -125,17 +145,22 @@ export default function ScannerUI({ checkpointName }: { checkpointName?: string 
 
               {/* Large Animated Stamp */}
               <div className="relative mb-8">
-                <span className="font-sans text-xs font-bold text-verified-green tracking-[0.2em] absolute -top-8 left-1/2 -translate-x-1/2 w-max">VERIFIED</span>
+                <span className="font-sans text-xs font-bold tracking-[0.2em] absolute -top-8 left-1/2 -translate-x-1/2 w-max" style={{ color: checkpointColor }}>VERIFIED</span>
                 
                 <div 
-                  className="w-[140px] h-[140px] rounded-full border-4 border-verified-green flex flex-col items-center justify-center p-2 stamp-edge text-verified-green animate-stamp-slam"
-                  style={{ '--stamp-rotate': '-5deg', transform: 'rotate(var(--stamp-rotate))' } as React.CSSProperties}
+                  className="w-[140px] h-[140px] rounded-full border-4 flex flex-col items-center justify-center p-2 stamp-edge animate-stamp-slam"
+                  style={{ 
+                    '--stamp-rotate': '-5deg', 
+                    transform: 'rotate(var(--stamp-rotate))',
+                    borderColor: checkpointColor,
+                    color: checkpointColor
+                  } as React.CSSProperties}
                 >
                   <div className="absolute inset-1 border-2 border-current rounded-full opacity-60"></div>
                   <div className="absolute top-4 w-full text-center px-4">
                     <span className="font-sans text-[10px] font-bold uppercase leading-tight line-clamp-1">{checkpointName}</span>
                   </div>
-                  <span className="text-5xl mt-1 opacity-90 drop-shadow-sm">✅</span>
+                  <span className="text-5xl mt-1 opacity-90 drop-shadow-sm">{checkpointIcon}</span>
                   <div className="absolute bottom-4 w-full text-center">
                     <span className="font-mono text-[9px] font-bold">
                       {new Date().toLocaleDateString('en-GB')}

@@ -14,7 +14,17 @@ export default async function OfficerScanPage() {
 
   const officer = await prisma.staff.findUnique({
     where: { sessionToken: session.token },
-    include: { checkpoint: { include: { hunt: true } } }
+    include: { 
+      checkpoint: { 
+        include: { 
+          hunt: {
+            include: {
+              checkpoints: { orderBy: { order: 'asc' } }
+            }
+          } 
+        } 
+      } 
+    }
   });
 
   if (!officer || !officer.checkpoint) {
@@ -31,15 +41,28 @@ export default async function OfficerScanPage() {
           <span className="text-sm font-sarabun text-seal-gold/80 hidden sm:inline">
             Officer {officer.displayName}
           </span>
-          <Link href="/" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition">
-            Exit <LogOut size={16} />
+          <Link href="/logout" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition">
+            <LogOut size={16} /> Exit
           </Link>
         </div>
       </header>
 
       <main className="flex-grow flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-[430px] mx-auto flex flex-col h-full">
-          <ScannerUI checkpointName={officer.checkpoint.name} />
+          {(() => {
+            const checkpoints = officer.checkpoint.hunt.checkpoints;
+            const cpIndex = checkpoints.findIndex((cp: any) => cp.id === officer.checkpointId);
+            const districtColors = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#F39C12', '#16A085', '#C9A84C', '#C0392B'];
+            const checkpointColor = districtColors[Math.max(0, cpIndex) % districtColors.length];
+            
+            return (
+              <ScannerUI 
+                checkpointName={officer.checkpoint.name} 
+                checkpointIcon={officer.checkpoint.zootopiaIcon}
+                checkpointColor={checkpointColor}
+              />
+            );
+          })()}
         </div>
       </main>
     </div>

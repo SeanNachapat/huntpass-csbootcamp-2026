@@ -26,8 +26,9 @@
   --color-district-gold: #C9A84C;
 
   --font-playfair: var(--font-playfair), serif;
-  --font-sarabun: var(--font-sarabun), sans-serif;
-  --font-sans: var(--font-sarabun), sans-serif;
+  --font-kanit: var(--font-kanit), sans-serif;
+  --font-sarabun: var(--font-kanit), sans-serif; /* Aliased so existing components instantly upgrade */
+  --font-sans: var(--font-kanit), sans-serif;
   --font-mono: "Courier New", Courier, monospace;
 
   /* Animations */

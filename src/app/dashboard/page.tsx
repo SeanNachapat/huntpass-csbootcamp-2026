@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import QRCode from 'qrcode';
-import { ShieldCheck, LogOut, CheckCircle, MapPin } from 'lucide-react';
+import { ShieldCheck, LogOut, CheckCircle, MapPin, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { houses } from '@/lib/houses';
 
@@ -55,19 +55,35 @@ export default async function Dashboard() {
   const districtColors = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#F39C12', '#16A085', '#C9A84C', '#C0392B'];
   const stampRotations = [-6, 4, -9, 7, -4, 8, -7, 5];
 
+  // Fetch active announcement
+  const activeAnnouncement = await prisma.announcement.findFirst({
+    where: { isActive: true },
+    orderBy: { createdAt: 'desc' }
+  });
+
   return (
     <div className="min-h-screen bg-deep-night/60 backdrop-blur-sm text-white relative">
       <header className="bg-passport-navy p-4 shadow-md flex justify-between items-center sticky top-0 z-10 w-full">
         <div className="flex items-center gap-2">
           <img src="/assets/Logo.png" alt="HuntPass Logo" className="h-8 w-auto" />
         </div>
-        <Link href="/" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition">
+        <Link href="/logout" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition">
           <LogOut size={16} /> Exit
         </Link>
       </header>
 
       <main className="flex-grow p-4 flex flex-col items-center max-w-[430px] mx-auto w-full relative animate-passport-slide">
         
+        {activeAnnouncement && (
+          <div className="w-full bg-yellow-500/90 text-passport-navy rounded-xl p-3 mb-6 shadow-md border border-yellow-600 flex items-start gap-3">
+            <Megaphone className="w-5 h-5 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-mono font-bold uppercase tracking-widest opacity-70 mb-1">City Bulletin</p>
+              <p className="font-sarabun font-bold text-sm leading-tight">{activeAnnouncement.message}</p>
+            </div>
+          </div>
+        )}
+
         {/* Passport Cover Card */}
         <div className="w-full bg-passport-navy rounded-2xl shadow-xl overflow-hidden mb-6 relative p-6 pt-8 pb-8">
           <div className="absolute inset-[6px] border border-seal-gold/30 rounded-xl pointer-events-none"></div>
@@ -82,7 +98,7 @@ export default async function Dashboard() {
           <div className="flex flex-col items-center">
             {/* Avatar Circle */}
             <div className="w-28 h-28 mx-auto mb-4 bg-slate-50 rounded-full flex items-center justify-center shadow-inner overflow-hidden border-2 border-passport-ivory ring-2 ring-seal-gold/50">
-              <img src={houseConfig.image} alt={houseConfig.name} className="w-full h-full object-cover" />
+              <img src={houseConfig.image} alt={houseConfig.name} className="w-2/3 h-2/3 object-cover" />
             </div>
 
             <h1 className="text-2xl font-playfair font-bold text-passport-ivory mb-1 text-center">
@@ -90,7 +106,7 @@ export default async function Dashboard() {
             </h1>
             <p className="text-sm font-sarabun text-seal-gold mb-4 text-center">({participant.nickname})</p>
             
-            <div className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-sarabun font-bold shadow-sm ${houseConfig.bgClass} text-white`}>
+            <div className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-sarabun font-bold shadow-sm ${houseConfig.bgClass} ${houseConfig.textClass}`}>
               บ้าน {houseConfig.name}
             </div>
           </div>

@@ -266,3 +266,27 @@ export async function removeOfficer(formData: FormData) {
 
   revalidatePath('/admin');
 }
+
+export async function broadcastAnnouncement(formData: FormData) {
+  const message = formData.get('message') as string;
+  if (!message || !message.trim()) {
+    throw new Error('Message cannot be empty');
+  }
+
+  // Deactivate old ones
+  await prisma.announcement.updateMany({
+    where: { isActive: true },
+    data: { isActive: false },
+  });
+
+  // Create new active one
+  await prisma.announcement.create({
+    data: {
+      message: message.trim(),
+      isActive: true,
+    }
+  });
+
+  revalidatePath('/admin');
+  revalidatePath('/dashboard');
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Sarabun } from "next/font/google";
+import { Playfair_Display, Kanit } from "next/font/google";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -8,9 +8,9 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
-const sarabun = Sarabun({
+const kanit = Kanit({
   weight: ['300', '400', '500', '600', '700'],
-  variable: "--font-sarabun",
+  variable: "--font-kanit",
   subsets: ["latin", "thai"],
 });
 
@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning className={`${playfair.variable} ${sarabun.variable} font-sans min-h-full flex flex-col`}>
+      <body suppressHydrationWarning className={`${playfair.variable} ${kanit.variable} font-sans min-h-full flex flex-col`}>
         {/* SVG Defs for effects */}
         <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
           <defs>
