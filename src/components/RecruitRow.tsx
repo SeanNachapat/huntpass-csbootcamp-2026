@@ -47,21 +47,21 @@ export default function RecruitRow({
         </div>
 
         {/* Name */}
-        <div className="col-span-3 font-sarabun font-bold text-sepia-ink text-sm">
+        <div className="col-span-3 font-sarabun font-bold text-sepia-ink text-sm truncate">
           {recruit.name} {recruit.surname}
         </div>
 
         {/* Nickname */}
-        <div className="col-span-2 font-sarabun text-muted-sepia text-sm">
+        <div className="col-span-1 font-sarabun text-muted-sepia text-sm truncate">
           {recruit.nickname}
         </div>
 
         {/* House */}
-        <div className="col-span-1 flex items-center gap-2">
+        <div className="col-span-2 flex items-center gap-2 min-w-0">
           <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center overflow-hidden border border-paper-border shrink-0 ring-1 ring-seal-gold/50">
             <img src={houses[recruit.house]?.image || '/assets/IMG_0488.PNG'} alt={recruit.house} className="w-full h-full object-cover" />
           </div>
-          <span className="text-xs font-sarabun font-medium text-sepia-ink md:hidden lg:inline">{recruit.house}</span>
+          <span className="text-xs font-sarabun font-medium text-sepia-ink md:hidden lg:inline truncate">{recruit.house}</span>
         </div>
 
         {/* Actions */}

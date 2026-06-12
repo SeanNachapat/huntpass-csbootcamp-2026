@@ -101,8 +101,8 @@ export default function RecruitTable({ recruits }: { recruits: any[] }) {
           <div className="col-span-2">Username</div>
           <div className="col-span-2">Password</div>
           <div className="col-span-3">Full Name</div>
-          <div className="col-span-2">Nickname</div>
-          <div className="col-span-1">House</div>
+          <div className="col-span-1">Nickname</div>
+          <div className="col-span-2">House</div>
           <div className="col-span-1 text-right pr-2">Actions</div>
         </div>
 

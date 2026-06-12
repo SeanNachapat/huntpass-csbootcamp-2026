@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { Trash2, Plus, Pen, X } from 'lucide-react';
-import { assignOfficer, updateOfficer, removeOfficer, removeCheckpoint } from '@/app/actions';
+import { assignOfficer, updateOfficer, removeOfficer, removeCheckpoint, updateCheckpoint } from '@/app/actions';
 
 export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: number }) {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditDistrictOpen, setIsEditDistrictOpen] = useState(false);
   const [editingOfficer, setEditingOfficer] = useState<any>(null);
 
   const districtColors = [
@@ -14,9 +15,10 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
     'border-l-district-gold', 'border-l-ink-red'
   ];
   const borderLeftColor = districtColors[index % districtColors.length];
+  const hasActiveModal = isAddOpen || !!editingOfficer || isEditDistrictOpen;
 
   return (
-    <div className={`bg-white/60 p-5 rounded-xl border border-paper-border border-l-[6px] ${borderLeftColor} flex flex-col h-full shadow-sm hover:-translate-y-1 transition-transform`}>
+    <div className={`bg-white/60 p-5 rounded-xl border border-paper-border border-l-[6px] ${borderLeftColor} flex flex-col h-full shadow-sm ${hasActiveModal ? '' : 'hover:-translate-y-1 transition-transform'}`}>
       <div className="flex justify-between items-start mb-6 pb-4 border-b border-paper-border">
         <div className="flex items-center gap-3">
           <span className="text-3xl bg-passport-ivory paper-texture w-14 h-14 flex items-center justify-center rounded-full shadow-sm border border-seal-gold/30">{cp.zootopiaIcon}</span>
@@ -25,6 +27,9 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
         <div className="flex gap-2">
           <button onClick={() => setIsAddOpen(true)} title="Add Officer" className="text-seal-gold hover:bg-seal-gold/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
             <Plus size={16} strokeWidth={3} />
+          </button>
+          <button onClick={() => setIsEditDistrictOpen(true)} title="Edit District" className="text-seal-gold hover:bg-seal-gold/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
+            <Pen size={16} />
           </button>
           <form action={removeCheckpoint}>
             <input type="hidden" name="checkpointId" value={cp.id} />
@@ -126,6 +131,39 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setEditingOfficer(null)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
                 <button type="submit" className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit District Modal */}
+      {isEditDistrictOpen && (
+        <div className="fixed inset-0 bg-passport-navy/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-passport-ivory paper-texture rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-seal-gold/50 text-left">
+            <div className="flex justify-between items-center p-5 border-b border-paper-border bg-white/40">
+              <h3 className="font-playfair font-bold text-passport-navy text-xl flex items-center gap-2">
+                <Pen size={18} className="text-seal-gold" /> Edit District
+              </h3>
+              <button onClick={() => setIsEditDistrictOpen(false)} className="text-muted-sepia hover:text-sepia-ink bg-white rounded-full p-1.5 border border-paper-border shadow-sm"><X size={16}/></button>
+            </div>
+            <form action={async (fd) => { await updateCheckpoint(fd); setIsEditDistrictOpen(false); }} className="p-6 flex flex-col gap-4">
+              <input type="hidden" name="checkpointId" value={cp.id} />
+              <div>
+                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">District Name</label>
+                <input type="text" name="name" defaultValue={cp.name} className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+              </div>
+              <div>
+                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Emoji Icon</label>
+                <input type="text" name="icon" defaultValue={cp.zootopiaIcon || ''} className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
+              </div>
+              <div>
+                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Hint (คำใบ้)</label>
+                <textarea name="hint" rows={3} defaultValue={cp.hint || ''} placeholder="e.g. Look under the big polar bear rug..." className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition resize-none" />
+              </div>
+              <div className="flex gap-3 mt-4">
+                <button type="button" onClick={() => setIsEditDistrictOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm">Save Changes</button>
               </div>
             </form>
           </div>
