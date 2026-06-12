@@ -23,6 +23,7 @@ model Checkpoint {
   name          String
   zootopiaIcon  String?
   order         Int?     @default(0)
+  hint          String?
   hunt          Hunt     @relation(fields: [huntId], references: [id], onDelete: Cascade)
   stamps        Stamp[]
   officers      Staff[]

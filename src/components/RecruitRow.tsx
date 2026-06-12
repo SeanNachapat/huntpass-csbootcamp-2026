@@ -5,14 +5,32 @@ import { Trash2, Pen, X, Eye, EyeOff } from 'lucide-react';
 import { updateRecruit, removeRecruit } from '@/app/actions';
 import { houses } from '@/lib/houses';
 
-export default function RecruitRow({ recruit }: { recruit: any }) {
+export default function RecruitRow({ 
+  recruit,
+  isSelected = false,
+  onToggleSelect
+}: { 
+  recruit: any,
+  isSelected?: boolean,
+  onToggleSelect?: () => void
+}) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <>
-      <div className="px-6 py-4 flex flex-col md:grid md:grid-cols-12 md:items-center gap-4 group hover:bg-seal-gold/10 transition duration-200">
+      <div className={`px-6 py-4 flex flex-col md:grid md:grid-cols-12 md:items-center gap-4 group hover:bg-seal-gold/10 transition duration-200 ${isSelected ? 'bg-seal-gold/5' : ''}`}>
         
+        {/* Checkbox (Visible on mobile as standard flex and md as col-span-1) */}
+        <div className="col-span-1 flex items-center justify-start md:justify-center">
+          <input 
+            type="checkbox" 
+            checked={isSelected}
+            onChange={onToggleSelect}
+            className="w-4 h-4 rounded border-paper-border text-seal-gold focus:ring-seal-gold cursor-pointer accent-seal-gold"
+          />
+        </div>
+
         {/* Username */}
         <div className="col-span-2 font-mono text-sm font-bold text-passport-navy flex items-center">
           <span className="bg-passport-navy/10 text-passport-navy px-2 py-0.5 rounded-md border border-seal-gold/20">@{recruit.username}</span>
@@ -23,7 +41,7 @@ export default function RecruitRow({ recruit }: { recruit: any }) {
           <span className="font-mono text-sm text-muted-sepia min-w-[64px]">
             {showPassword ? recruit.password : '••••••••'}
           </span>
-          <button onClick={() => setShowPassword(!showPassword)} className="text-seal-gold hover:text-passport-navy transition outline-none focus:outline-none">
+          <button onClick={() => setShowPassword(!showPassword)} className="text-seal-gold hover:text-passport-navy transition outline-none focus:outline-none cursor-pointer">
             {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
           </button>
         </div>
@@ -39,11 +57,11 @@ export default function RecruitRow({ recruit }: { recruit: any }) {
         </div>
 
         {/* House */}
-        <div className="col-span-2 flex items-center gap-2">
+        <div className="col-span-1 flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center overflow-hidden border border-paper-border shrink-0 ring-1 ring-seal-gold/50">
             <img src={houses[recruit.house]?.image || '/assets/IMG_0488.PNG'} alt={recruit.house} className="w-full h-full object-cover" />
           </div>
-          <span className="text-sm font-sarabun font-medium text-sepia-ink">{recruit.house}</span>
+          <span className="text-xs font-sarabun font-medium text-sepia-ink md:hidden lg:inline">{recruit.house}</span>
         </div>
 
         {/* Actions */}
