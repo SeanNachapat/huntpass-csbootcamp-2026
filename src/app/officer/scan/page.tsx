@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import ScannerUI from './ScannerUI';
 import { MapPin, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { logout } from '@/app/actions';
 
 export default async function OfficerScanPage() {
   const session = await getSession();
@@ -41,9 +42,11 @@ export default async function OfficerScanPage() {
           <span className="text-sm font-sarabun text-seal-gold/80 hidden sm:inline">
             Officer {officer.displayName}
           </span>
-          <Link href="/logout" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition">
-            <LogOut size={16} /> Exit
-          </Link>
+          <form action={logout}>
+            <button type="submit" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition cursor-pointer">
+              <LogOut size={16} /> Exit
+            </button>
+          </form>
         </div>
       </header>
 

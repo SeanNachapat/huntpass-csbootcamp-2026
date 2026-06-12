@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import { ShieldCheck, LogOut, CheckCircle, MapPin, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { houses } from '@/lib/houses';
+import { logout } from '@/app/actions';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 
 export default async function Dashboard() {
@@ -71,9 +72,11 @@ export default async function Dashboard() {
         <div className="flex items-center gap-4">
           <ChangePasswordModal />
           <div className="w-px h-4 bg-seal-gold/30"></div>
-          <Link href="/logout" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition">
-            <LogOut size={16} /> Exit
-          </Link>
+          <form action={logout}>
+            <button type="submit" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition cursor-pointer">
+              <LogOut size={16} /> Exit
+            </button>
+          </form>
         </div>
       </header>
 
