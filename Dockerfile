@@ -53,7 +53,7 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-# Point SQLite database to the bind-mounted file
-ENV DATABASE_URL="file:/app/dev.db"
+# Point SQLite database to the bind-mounted file in data directory
+ENV DATABASE_URL="file:/app/data/dev.db"
 
 CMD ["node", "server.js"]

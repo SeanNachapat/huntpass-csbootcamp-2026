@@ -9,7 +9,7 @@ services:
       - .env
     volumes:
       # Bind-mount the local SQLite database so data persists and is shared with local development
-      - ./dev.db:/app/dev.db
+      - ./dev.db:/app/data/dev.db
 
   cloudflared:
     image: cloudflare/cloudflared:latest
