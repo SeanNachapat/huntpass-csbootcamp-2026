@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { setSession, getSession } from '@/lib/session';
+import { setSession, getSession, clearSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import crypto from 'crypto';
 import { revalidatePath } from 'next/cache';
@@ -332,4 +332,9 @@ export async function changeRecruitPassword(formData: FormData) {
   });
 
   return { success: true };
+}
+
+export async function logout() {
+  await clearSession();
+  redirect('/');
 }

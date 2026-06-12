@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { logout } from '@/app/actions';
 import SystemHealth from '@/components/admin/SystemHealth';
 import MobileAdminNav from '@/components/admin/MobileAdminNav';
 import { ShieldCheck, Users, MapPin, LayoutDashboard, LogOut, Activity } from 'lucide-react';
@@ -39,9 +40,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </nav>
 
         <div className="p-4 border-t border-seal-gold/30">
-          <Link href="/logout" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ink-red/20 text-ink-red hover:text-red-100 transition font-sarabun font-bold">
-            <LogOut size={20} /> Exit Portal
-          </Link>
+          <form action={logout}>
+            <button type="submit" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ink-red/20 text-ink-red hover:text-red-100 transition font-sarabun font-bold cursor-pointer text-left">
+              <LogOut size={20} /> Exit Portal
+            </button>
+          </form>
         </div>
       </aside>
 
@@ -54,7 +57,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <img src="/assets/Logo.png" alt="HuntPass Logo" className="h-8 w-auto" />
             </div>
-            <Link href="/logout" className="text-xs font-mono tracking-widest text-ink-red w-12 text-right relative z-10">EXIT</Link>
+            <form action={logout} className="w-12 text-right relative z-10">
+              <button type="submit" className="text-xs font-mono tracking-widest text-ink-red cursor-pointer">EXIT</button>
+            </form>
           </div>
           
           {/* New Sleek Pill Navigation */}
