@@ -86,6 +86,7 @@ export async function addCheckpoint(formData: FormData) {
   const huntId = formData.get('huntId') as string;
   const name = formData.get('name') as string;
   const zootopiaIcon = (formData.get('icon') as string) || '📍';
+  const hint = formData.get('hint') as string || null;
 
   if (!huntId || !name) throw new Error('Hunt ID and Name are required');
 
@@ -93,7 +94,28 @@ export async function addCheckpoint(formData: FormData) {
     data: {
       huntId,
       name,
-      zootopiaIcon
+      zootopiaIcon,
+      hint
+    }
+  });
+
+  revalidatePath('/admin');
+}
+
+export async function updateCheckpoint(formData: FormData) {
+  const checkpointId = formData.get('checkpointId') as string;
+  const name = formData.get('name') as string;
+  const zootopiaIcon = (formData.get('icon') as string) || '📍';
+  const hint = formData.get('hint') as string || null;
+
+  if (!checkpointId || !name) throw new Error('Checkpoint ID and Name are required');
+
+  await prisma.checkpoint.update({
+    where: { id: checkpointId },
+    data: {
+      name,
+      zootopiaIcon,
+      hint
     }
   });
 
@@ -337,4 +359,14 @@ export async function changeRecruitPassword(formData: FormData) {
 export async function logout() {
   await clearSession();
   redirect('/');
+}
+
+export async function bulkRemoveRecruits(recruitIds: string[]) {
+  if (!recruitIds || recruitIds.length === 0) return;
+  await prisma.participant.deleteMany({
+    where: {
+      id: { in: recruitIds }
+    }
+  });
+  revalidatePath('/admin/recruits');
 }
