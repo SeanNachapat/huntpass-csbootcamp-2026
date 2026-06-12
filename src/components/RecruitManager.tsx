@@ -4,11 +4,72 @@ import { useState } from 'react';
 import { Users, Upload, Plus, X, Info } from 'lucide-react';
 import { addRecruit, bulkImportRecruits } from '@/app/actions';
 import { houses } from '@/lib/houses';
+import { read, utils } from 'xlsx';
 
 export default function RecruitManager({ huntId }: { huntId: string }) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  
+  const [fileError, setFileError] = useState<string>('');
+  const [isValidFile, setIsValidFile] = useState(false);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+
+  const REQUIRED_HEADERS = ['name', 'surname', 'nickname', 'house', 'username', 'password'];
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setFileError('');
+    setIsValidFile(false);
+
+    if (!file) return;
+
+    try {
+      let headers: string[] = [];
+      let preview: any[] = [];
+
+      if (file.name.endsWith('.json')) {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (Array.isArray(data) && data.length > 0) {
+          headers = Object.keys(data[0]).map(h => String(h).trim());
+          preview = data.slice(0, 3);
+        }
+      } else {
+        const buffer = await file.arrayBuffer();
+        const workbook = read(buffer, { type: 'buffer', codepage: 65001 });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Convert to array of arrays to get headers easily
+        const data: any[][] = utils.sheet_to_json(worksheet, { header: 1 });
+        if (data.length > 0) {
+          headers = data[0].map((h: any) => String(h).trim());
+        }
+        // Extract first 3 rows for preview
+        preview = utils.sheet_to_json(worksheet).slice(0, 3);
+      }
+
+      if (headers.length === 0) {
+        setFileError('File is empty or format is unrecognized.');
+        return;
+      }
+
+      const missingHeaders = REQUIRED_HEADERS.filter(h => !headers.includes(h));
+      
+      if (missingHeaders.length > 0) {
+        setFileError(`Missing required columns: ${missingHeaders.join(', ')}`);
+        return;
+      }
+
+      // All good!
+      setIsValidFile(true);
+      setPreviewData(preview);
+    } catch (err: any) {
+      setFileError('Failed to read file. Please ensure it is a valid CSV, JSON, or Excel file.');
+    }
+  };
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -117,12 +178,14 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
                 <div className="flex justify-between items-start mb-2">
                   <div className="font-sarabun font-bold text-sepia-ink text-sm">Upload File (.csv, .xlsx, .json)</div>
                   
-                  {/* Tooltip Hover Guide */}
+                  {/* Tooltip Click Guide */}
                   <div className="relative">
-                    <Info size={16} className="text-seal-gold cursor-help" />
-                    <div className="absolute right-0 bottom-full mb-2 w-64 bg-passport-navy text-passport-ivory paper-texture text-xs p-3 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none z-10 border border-seal-gold/30">
+                    <button type="button" onClick={(e) => { e.preventDefault(); setShowTooltip(!showTooltip); }}>
+                      <Info size={16} className="text-seal-gold cursor-pointer hover:scale-110 transition-transform" />
+                    </button>
+                    <div className={`absolute right-0 bottom-full mb-2 w-64 bg-passport-navy text-passport-ivory text-xs p-3 rounded-xl shadow-xl transition-all z-10 border border-seal-gold/30 ${showTooltip ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
                       <div className="font-sarabun font-bold mb-1 border-b border-seal-gold/30 pb-1 text-seal-gold">Required Column Headers:</div>
-                      <ul className="list-disc pl-4 space-y-1 mt-2 font-sans text-xs">
+                      <ul className="list-disc pl-4 space-y-1 mt-2 font-sans text-xs mb-3">
                         <li>name</li>
                         <li>surname</li>
                         <li>nickname</li>
@@ -130,6 +193,9 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
                         <li>username</li>
                         <li>password</li>
                       </ul>
+                      <a href="/assets/example_recruits.csv" download className="block w-full text-center py-1.5 bg-seal-gold/20 hover:bg-seal-gold/40 text-seal-gold rounded-md text-[10px] font-mono font-bold uppercase tracking-wider transition">
+                        Download Example
+                      </a>
                       <div className="absolute -bottom-1 right-1 w-2 h-2 bg-passport-navy border-r border-b border-seal-gold/30 transform rotate-45"></div>
                     </div>
                   </div>
@@ -137,15 +203,60 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
                 <input 
                   type="file" 
                   name="file" 
+                  onChange={handleFileChange}
                   accept=".csv, .json, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
                   className="w-full text-sm text-muted-sepia file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-mono file:font-bold file:bg-white file:text-passport-navy file:border file:border-paper-border hover:file:bg-slate-50 cursor-pointer shadow-sm transition"
                   required 
                 />
               </div>
 
+              {fileError && (
+                <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-600 text-xs font-sarabun font-bold animate-in fade-in zoom-in-95">
+                  ⚠️ {fileError}
+                </div>
+              )}
+
+              {isValidFile && previewData.length > 0 && (
+                <div className="bg-white rounded-xl border border-paper-border shadow-sm overflow-hidden animate-in fade-in zoom-in-95">
+                  <div className="bg-passport-navy text-white text-xs font-mono font-bold p-2 flex justify-between items-center px-4">
+                    <span>DATA PREVIEW</span>
+                    <span className="text-seal-gold/80 font-normal">First {previewData.length} rows</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-sans">
+                      <thead className="bg-slate-50 border-b border-paper-border text-muted-sepia uppercase text-[10px] tracking-wider">
+                        <tr>
+                          <th className="p-2 px-3 font-bold whitespace-nowrap">Recruit Name</th>
+                          <th className="p-2 px-3 font-bold whitespace-nowrap">House</th>
+                          <th className="p-2 px-3 font-bold whitespace-nowrap">Username</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-paper-border">
+                        {previewData.map((row, idx) => {
+                          const getValue = (keyToMatch: string) => {
+                            const foundKey = Object.keys(row).find(k => k.trim().toLowerCase() === keyToMatch.toLowerCase());
+                            return foundKey ? String(row[foundKey]).trim() : '-';
+                          };
+                          return (
+                            <tr key={idx} className="hover:bg-slate-50 transition">
+                              <td className="p-2 px-3 text-passport-navy font-bold whitespace-nowrap">{getValue('name')} {getValue('surname')}</td>
+                              <td className="p-2 px-3 text-seal-gold whitespace-nowrap font-sarabun font-bold">{getValue('house')}</td>
+                              <td className="p-2 px-3 text-sepia-ink whitespace-nowrap font-mono">{getValue('username')}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="bg-green-500/10 border-t border-green-500/20 p-2 text-green-700 text-xs font-sarabun font-bold text-center">
+                    ✅ File looks perfect! Ready to import.
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3">
-                <button type="button" onClick={() => setIsImportOpen(false)} disabled={isImporting} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm disabled:opacity-50">Cancel</button>
-                <button type="submit" disabled={isImporting} className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+                <button type="button" onClick={() => { setIsImportOpen(false); setFileError(''); setIsValidFile(false); setPreviewData([]); }} disabled={isImporting} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm disabled:opacity-50">Cancel</button>
+                <button type="submit" disabled={isImporting || !isValidFile} className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
                   {isImporting ? <span className="animate-pulse">Importing...</span> : 'Upload & Import'}
                 </button>
               </div>

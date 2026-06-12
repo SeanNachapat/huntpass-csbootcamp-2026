@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { setSession } from '@/lib/session';
+import { setSession, getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import crypto from 'crypto';
 import { revalidatePath } from 'next/cache';
@@ -15,8 +15,8 @@ export async function unifiedLogin(formData: FormData) {
 
   if (!username || !password) return { error: 'Username and Password required' };
 
-  const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-  const ADMIN_PASS = process.env.ADMIN_PASS || 'password123';
+  const ADMIN_USER = process.env.ADMIN_USER || ']l=KC';
+  const ADMIN_PASS = process.env.ADMIN_PASS || '%A&RlGzOQ~8Db\\1{ckJZ%qQBg^onBg';
 
   // 1. Check Admin
   if (username === ADMIN_USER && password === ADMIN_PASS) {
@@ -199,27 +199,35 @@ export async function bulkImportRecruits(formData: FormData) {
     const text = buffer.toString('utf-8');
     rawData = JSON.parse(text);
   } else {
-    const workbook = read(buffer, { type: 'buffer' });
+    const workbook = read(buffer, { type: 'buffer', codepage: 65001 });
     const firstSheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[firstSheetName];
     rawData = utils.sheet_to_json(worksheet);
   }
 
-  const recruitsToCreate = rawData.map((row: any) => {
+  const recruitsToCreate = rawData.map((rawRow: any) => {
+    // Sanitize row by trimming all keys and values to ignore hidden blank spaces
+    const row: any = {};
+    for (const key of Object.keys(rawRow)) {
+      if (rawRow[key] !== null && rawRow[key] !== undefined) {
+        row[key.trim()] = String(rawRow[key]).trim();
+      }
+    }
+
     if (!row.name || !row.surname || !row.nickname || !row.house || !row.username || !row.password) {
-      throw new Error(`Missing required fields in row: ${JSON.stringify(row)}`);
+      throw new Error(`Missing required fields in row: ${JSON.stringify(rawRow)}`);
     }
 
     const qrToken = crypto.randomBytes(32).toString('hex');
 
     return {
       huntId,
-      name: String(row.name),
-      surname: String(row.surname),
-      nickname: String(row.nickname),
-      house: String(row.house),
-      username: String(row.username),
-      password: String(row.password),
+      name: row.name,
+      surname: row.surname,
+      nickname: row.nickname,
+      house: row.house,
+      username: row.username,
+      password: row.password,
       qrToken,
     };
   });
@@ -289,4 +297,39 @@ export async function broadcastAnnouncement(formData: FormData) {
 
   revalidatePath('/admin');
   revalidatePath('/dashboard');
+}
+
+export async function changeRecruitPassword(formData: FormData) {
+  const currentPassword = formData.get('currentPassword') as string;
+  const newPassword = formData.get('newPassword') as string;
+
+  if (!currentPassword || !newPassword) {
+    throw new Error('Current and new password are required');
+  }
+
+  const session = await getSession();
+  if (!session || session.role !== 'participant') {
+    throw new Error('Unauthorized');
+  }
+
+  const participant = await prisma.participant.findUnique({
+    where: { qrToken: session.token }
+  });
+
+  if (!participant) {
+    throw new Error('Participant not found');
+  }
+
+  const hashedCurrent = crypto.createHash('sha256').update(currentPassword).digest('hex');
+  if (participant.password !== hashedCurrent && participant.password !== currentPassword) {
+    throw new Error('Current password is incorrect');
+  }
+
+  const hashedNew = crypto.createHash('sha256').update(newPassword).digest('hex');
+  await prisma.participant.update({
+    where: { id: participant.id },
+    data: { password: hashedNew }
+  });
+
+  return { success: true };
 }

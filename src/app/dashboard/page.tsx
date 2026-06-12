@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import { ShieldCheck, LogOut, CheckCircle, MapPin, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { houses } from '@/lib/houses';
+import ChangePasswordModal from '@/components/ChangePasswordModal';
 
 export default async function Dashboard() {
   const session = await getSession();
@@ -67,9 +68,13 @@ export default async function Dashboard() {
         <div className="flex items-center gap-2">
           <img src="/assets/Logo.png" alt="HuntPass Logo" className="h-8 w-auto" />
         </div>
-        <Link href="/logout" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition">
-          <LogOut size={16} /> Exit
-        </Link>
+        <div className="flex items-center gap-4">
+          <ChangePasswordModal />
+          <div className="w-px h-4 bg-seal-gold/30"></div>
+          <Link href="/logout" className="font-mono text-xs text-seal-gold/80 hover:text-seal-gold flex items-center gap-1 transition">
+            <LogOut size={16} /> Exit
+          </Link>
+        </div>
       </header>
 
       <main className="flex-grow p-4 flex flex-col items-center max-w-[430px] mx-auto w-full relative animate-passport-slide">

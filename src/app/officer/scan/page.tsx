@@ -58,7 +58,7 @@ export default async function OfficerScanPage() {
             return (
               <ScannerUI 
                 checkpointName={officer.checkpoint.name} 
-                checkpointIcon={officer.checkpoint.zootopiaIcon}
+                checkpointIcon={officer.checkpoint.zootopiaIcon ?? undefined}
                 checkpointColor={checkpointColor}
               />
             );

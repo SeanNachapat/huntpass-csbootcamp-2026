@@ -34,8 +34,8 @@ export default function RecruitRow({ recruit }: { recruit: any }) {
         </div>
 
         {/* Nickname */}
-        <div className="col-span-2 font-sarabun text-muted-sepia text-sm italic">
-          "{recruit.nickname}"
+        <div className="col-span-2 font-sarabun text-muted-sepia text-sm">
+          {recruit.nickname}
         </div>
 
         {/* House */}
