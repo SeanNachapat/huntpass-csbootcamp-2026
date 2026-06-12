@@ -1,17 +1,14 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: zoostamp
-      POSTGRES_PASSWORD: zoostamppassword
-      POSTGRES_DB: zoostamp
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zoostamp-web
     ports:
-      - "5432:5432"
+      - "3000:3000"
     volumes:
-      - zoostamp_pgdata:/var/lib/postgresql/data
-
-volumes:
-  zoostamp_pgdata:
+      # Bind-mount the local SQLite database so data persists and is shared with local development
+      - ./dev.db:/app/dev.db
+    restart: unless-stopped
