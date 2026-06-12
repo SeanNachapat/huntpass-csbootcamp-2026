@@ -9,7 +9,7 @@ export default async function DistrictsPage() {
   const session = await getSession();
   
   if (!session || session.role !== 'chief') {
-    redirect('/login');
+    redirect('/');
   }
 
   const hunts = await prisma.hunt.findMany({

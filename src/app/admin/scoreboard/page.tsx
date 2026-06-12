@@ -7,7 +7,7 @@ export default async function ScoreboardPage() {
   const session = await getSession();
   
   if (!session || session.role !== 'chief') {
-    redirect('/login');
+    redirect('/');
   }
 
   const hunts = await prisma.hunt.findMany({

@@ -11,7 +11,7 @@ export async function setSession(token: string, role: 'participant' | 'officer' 
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify({ token, role }), {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     maxAge: 60 * 60 * 24 * 7, // 1 week
     path: '/',
   });
