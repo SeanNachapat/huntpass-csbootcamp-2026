@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: zoostamp-web
     restart: unless-stopped
+    env_file:
+      - .env
     volumes:
       # Bind-mount the local SQLite database so data persists and is shared with local development
       - ./dev.db:/app/dev.db
