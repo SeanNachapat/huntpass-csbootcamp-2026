@@ -18,6 +18,9 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
+# Apply migrations so that Next.js static generation has a migrated database
+RUN npx prisma migrate deploy
+
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
