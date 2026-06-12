@@ -1,7 +1,9 @@
 FROM node:20-alpine AS base
 
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apk add --no-cache libc6-compat python3 make g++ \
+    && ln -sf /usr/bin/python3 /usr/bin/python
+ENV PYTHON=/usr/bin/python3
 WORKDIR /app
 
 COPY package.json package-lock.json ./
