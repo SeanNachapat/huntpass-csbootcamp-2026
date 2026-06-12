@@ -7,6 +7,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - DATABASE_URL=file:/app/data/dev.db
     volumes:
       # Bind-mount the local SQLite database so data persists and is shared with local development
       - ./dev.db:/app/data/dev.db
