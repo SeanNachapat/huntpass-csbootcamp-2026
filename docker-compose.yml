@@ -6,9 +6,25 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: zoostamp-web
-    ports:
-      - "3000:3000"
+    restart: unless-stopped
     volumes:
       # Bind-mount the local SQLite database so data persists and is shared with local development
       - ./dev.db:/app/dev.db
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: zoostamp-caddy
     restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:
