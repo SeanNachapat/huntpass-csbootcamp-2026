@@ -1,11 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { XCircle } from 'lucide-react';
 import { houses } from '@/lib/houses';
 
 type ScanStatus = 'scanning' | 'success' | 'error' | 'already_stamped';
+
+interface CameraDevice {
+  id: string;
+  label: string;
+}
 
 export default function ScannerUI({ 
   checkpointName, 
@@ -16,63 +21,180 @@ export default function ScannerUI({
   checkpointIcon?: string, 
   checkpointColor?: string 
 }) {
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  const isProcessingRef = useRef<boolean>(false);
+  
   const [status, setStatus] = useState<ScanStatus>('scanning');
   const [message, setMessage] = useState<string>('');
   const [participantName, setParticipantName] = useState<string>('');
   const [house, setHouse] = useState<string>('');
   const [stampedAt, setStampedAt] = useState<string>('');
 
-  useEffect(() => {
-    let isMounted = true;
-    const timeoutId = setTimeout(() => {
-      if (!isMounted) return;
-      const scanner = new Html5QrcodeScanner("reader", {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-      }, false);
-      scannerRef.current = scanner;
-      scanner.render(async (decodedText) => {
-        scanner.pause(true);
-        try {
-          const data = JSON.parse(decodedText);
-          const res = await fetch('/api/stamp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          });
-          const result = await res.json();
-          if (res.ok) {
-            setStatus('success');
-            setParticipantName(result.participantName);
-            setHouse(result.speciesAvatar || 'ควาย (Bogo)'); 
-            setMessage('Stamp recorded successfully!');
-          } else if (result.error === 'Already stamped') {
-            setStatus('already_stamped');
-            setParticipantName(result.participantName);
-            setStampedAt(result.stampedAt);
-            setMessage(`Already stamped`);
-          } else {
-            setStatus('error');
-            setMessage(result.error || 'Invalid QR code.');
-          }
-        } catch (err) {
-          setStatus('error');
-          setMessage('Unrecognized QR code format.');
+  const [cameras, setCameras] = useState<CameraDevice[]>([]);
+  const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(-1);
+  const [isScannerActive, setIsScannerActive] = useState<boolean>(false);
+  const [isCameraLoading, setIsCameraLoading] = useState<boolean>(true);
+  const [hasTorch, setHasTorch] = useState<boolean>(false);
+  const [isTorchOn, setIsTorchOn] = useState<boolean>(false);
+
+  const startScanner = async (cameraId: string) => {
+    if (!html5QrCodeRef.current) return;
+    setIsCameraLoading(true);
+    try {
+      // Stop scanner if already running
+      if (html5QrCodeRef.current.isScanning) {
+        await html5QrCodeRef.current.stop();
+      }
+    } catch (e) {}
+
+    try {
+      await html5QrCodeRef.current.start(
+        cameraId,
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+        },
+        async (decodedText) => {
+          await onScanSuccess(decodedText);
+        },
+        () => {
+          // Verbose error callback, ignore.
         }
-      }, (error) => {});
+      );
+      
+      setIsScannerActive(true);
+      setIsTorchOn(false);
+
+      // Check flashlight/torch capability
+      try {
+        const capabilities = html5QrCodeRef.current.getRunningTrackCapabilities() as any;
+        setHasTorch('torch' in capabilities);
+      } catch (e) {
+        setHasTorch(false);
+      }
+    } catch (err) {
+      console.error("Failed to start camera scanner", err);
+    } finally {
+      setIsCameraLoading(false);
+    }
+  };
+
+  const stopScanner = async () => {
+    try {
+      if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+        await html5QrCodeRef.current.stop();
+      }
+    } catch (e) {}
+    setIsScannerActive(false);
+    setIsTorchOn(false);
+  };
+
+  const flipCamera = async () => {
+    if (cameras.length <= 1) return;
+    const nextIndex = (currentCameraIndex + 1) % cameras.length;
+    setCurrentCameraIndex(nextIndex);
+    if (isScannerActive) {
+      await startScanner(cameras[nextIndex].id);
+    }
+  };
+
+  const toggleTorch = async () => {
+    if (!html5QrCodeRef.current || !html5QrCodeRef.current.isScanning) return;
+    try {
+      const nextTorchState = !isTorchOn;
+      await html5QrCodeRef.current.applyVideoConstraints({
+        advanced: [{ torch: nextTorchState } as any]
+      });
+      setIsTorchOn(nextTorchState);
+    } catch (err) {
+      console.error("Failed to toggle flashlight", err);
+    }
+  };
+
+  useEffect(() => {
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCodeRef.current = html5QrCode;
+    let isMounted = true;
+
+    // Wait a brief moment to ensure container mounts
+    const timeoutId = setTimeout(() => {
+      Html5Qrcode.getCameras().then(devices => {
+        if (!isMounted) return;
+        if (devices && devices.length > 0) {
+          setCameras(devices);
+          
+          // Default to back/rear camera if available
+          const backCamIndex = devices.findIndex(device => 
+            device.label.toLowerCase().includes('back') || 
+            device.label.toLowerCase().includes('environment') ||
+            device.label.toLowerCase().includes('rear')
+          );
+          
+          const defaultIndex = backCamIndex !== -1 ? backCamIndex : 0;
+          setCurrentCameraIndex(defaultIndex);
+          startScanner(devices[defaultIndex].id);
+        } else {
+          console.warn("No camera devices found.");
+          setIsCameraLoading(false);
+        }
+      }).catch(err => {
+        console.error("Error enumerating cameras:", err);
+        if (isMounted) {
+          setIsCameraLoading(false);
+        }
+      });
     }, 100);
 
     return () => {
       isMounted = false;
       clearTimeout(timeoutId);
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
-        scannerRef.current = null;
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().catch(console.error);
       }
     };
   }, []);
+
+  const onScanSuccess = async (decodedText: string) => {
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
+
+    // Stop camera feed to save resources/battery during stamp confirmation card view
+    try {
+      if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+        await html5QrCodeRef.current.stop();
+      }
+      setIsScannerActive(false);
+    } catch (e) {}
+    setIsTorchOn(false);
+
+    try {
+      const data = JSON.parse(decodedText);
+      const res = await fetch('/api/stamp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setStatus('success');
+        setParticipantName(result.participantName);
+        setHouse(result.speciesAvatar || 'ควาย (Bogo)'); 
+        setMessage('Stamp recorded successfully!');
+      } else if (result.error === 'Already stamped') {
+        setStatus('already_stamped');
+        setParticipantName(result.participantName);
+        setStampedAt(result.stampedAt);
+        setMessage(`Already stamped`);
+      } else {
+        setStatus('error');
+        setMessage(result.error || 'Invalid QR code.');
+      }
+    } catch (err) {
+      setStatus('error');
+      setMessage('Unrecognized QR code format.');
+    }
+  };
 
   const resetScanner = () => {
     setStatus('scanning');
@@ -80,8 +202,11 @@ export default function ScannerUI({
     setParticipantName('');
     setHouse('');
     setStampedAt('');
-    if (scannerRef.current) {
-      scannerRef.current.resume();
+    isProcessingRef.current = false;
+    
+    // Automatically resume scanning
+    if (cameras.length > 0 && currentCameraIndex !== -1) {
+      startScanner(cameras[currentCameraIndex].id);
     }
   };
 
@@ -92,38 +217,132 @@ export default function ScannerUI({
       
       {/* Camera Viewport */}
       <div className={`w-full aspect-square relative rounded-2xl overflow-hidden bg-black ${status !== 'scanning' ? 'hidden' : ''}`}>
-        <div id="reader" className="w-full h-full border-none [&>div]:border-none [&>video]:object-cover"></div>
         
-        {/* Animated Bracket Overlay */}
-        <div className="absolute inset-0 pointer-events-none z-10 animate-viewfinder-pulse p-4" style={{ color: checkpointColor }}>
-          <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-current rounded-tl-lg opacity-80"></div>
-          <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-current rounded-tr-lg opacity-80"></div>
-          <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-current rounded-bl-lg opacity-80"></div>
-          <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-current rounded-br-lg opacity-80"></div>
-          
-          <div className="absolute top-2 left-2 text-xl opacity-50">{checkpointIcon}</div>
-          <div className="absolute top-2 right-2 text-xl opacity-50">{checkpointIcon}</div>
-          <div className="absolute bottom-2 left-2 text-xl opacity-50">{checkpointIcon}</div>
-          <div className="absolute bottom-2 right-2 text-xl opacity-50">{checkpointIcon}</div>
-        </div>
+        {/* Standby screen when camera stream is stopped */}
+        {!isScannerActive && !isCameraLoading && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-passport-navy text-passport-ivory paper-texture p-6 text-center">
+            <div className="absolute inset-[6px] border border-seal-gold/30 rounded-xl pointer-events-none"></div>
+            <div className="w-20 h-20 rounded-full border-2 border-seal-gold/40 flex items-center justify-center mb-4 bg-white/5 animate-pulse">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <h4 className="font-playfair font-bold text-lg text-seal-gold mb-1">Scanner Standby</h4>
+            <p className="font-sarabun text-xs text-muted-sepia max-w-[200px] mb-6">Camera feed is currently offline. Tap below to reactivate stream.</p>
+            <button
+              onClick={() => {
+                if (cameras.length > 0 && currentCameraIndex !== -1) {
+                  startScanner(cameras[currentCameraIndex].id);
+                } else {
+                  // Retry camera permission / list
+                  window.location.reload();
+                }
+              }}
+              className="px-6 py-2.5 bg-seal-gold text-passport-navy font-sarabun font-bold text-xs rounded-full hover:bg-seal-gold/90 transition active:scale-95 shadow-md cursor-pointer"
+            >
+              Start Camera
+            </button>
+          </div>
+        )}
 
-        {/* Scan Line */}
-        <div 
-          className="absolute top-0 left-0 w-full h-1 z-20 animate-scan-sweep" 
-          style={{ 
-            backgroundColor: checkpointColor, 
-            boxShadow: `0 0 12px 4px ${checkpointColor}99`,
-            opacity: 0.6 
-          }}
-        ></div>
+        {/* Loading Overlay */}
+        {isScannerActive && isCameraLoading && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm text-passport-ivory">
+            <div className="w-10 h-10 border-4 border-seal-gold border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p className="font-mono text-[10px] tracking-widest text-seal-gold/70">INITIALIZING CAMERA...</p>
+          </div>
+        )}
+
+        {/* Reader viewport where Html5Qrcode embeds video */}
+        <div id="reader" className="w-full h-full border-none [&>div]:border-none [&>video]:object-cover [&>video]:w-full [&>video]:h-full"></div>
+        
+        {/* Custom viewport overlays */}
+        {isScannerActive && !isCameraLoading && (
+          <>
+            {/* Animated Bracket Overlay */}
+            <div className="absolute inset-0 pointer-events-none z-10 animate-viewfinder-pulse p-4" style={{ color: checkpointColor }}>
+              <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-current rounded-tl-lg opacity-80"></div>
+              <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-current rounded-tr-lg opacity-80"></div>
+              <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-current rounded-bl-lg opacity-80"></div>
+              <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-current rounded-br-lg opacity-80"></div>
+              
+              <div className="absolute top-2 left-2 text-xl opacity-50">{checkpointIcon}</div>
+              <div className="absolute top-2 right-2 text-xl opacity-50">{checkpointIcon}</div>
+              <div className="absolute bottom-2 left-2 text-xl opacity-50">{checkpointIcon}</div>
+              <div className="absolute bottom-2 right-2 text-xl opacity-50">{checkpointIcon}</div>
+            </div>
+
+            {/* Scan Line */}
+            <div 
+              className="absolute top-0 left-0 w-full h-1 z-20 animate-scan-sweep" 
+              style={{ 
+                backgroundColor: checkpointColor, 
+                boxShadow: `0 0 12px 4px ${checkpointColor}99`,
+                opacity: 0.6 
+              }}
+            ></div>
+          </>
+        )}
       </div>
+
+      {/* Control Bar UNDER the scanner frame */}
+      {status === 'scanning' && (
+        <div className="flex justify-center items-center gap-6 mt-6 px-4">
+          {/* Close / Open Camera Toggle */}
+          <button
+            type="button"
+            onClick={isScannerActive ? stopScanner : () => {
+              if (cameras.length > 0 && currentCameraIndex !== -1) {
+                startScanner(cameras[currentCameraIndex].id);
+              }
+            }}
+            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl min-w-[75px] transition active:scale-95 border cursor-pointer bg-[#fffbf2] shadow-sm ${isScannerActive ? 'border-ink-red/30 text-ink-red hover:bg-ink-red/5' : 'border-seal-gold/30 text-seal-gold hover:bg-seal-gold/5'}`}
+          >
+            {isScannerActive ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+                <span className="text-[10px] font-sans font-bold uppercase tracking-wider">Close</span>
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span className="text-[10px] font-sans font-bold uppercase tracking-wider">Open</span>
+              </>
+            )}
+          </button>
+
+          {/* Flip Camera Button */}
+          <button
+            type="button"
+            onClick={flipCamera}
+            disabled={cameras.length <= 1 || !isScannerActive}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl min-w-[80px] bg-passport-navy text-seal-gold border border-seal-gold/30 transition active:scale-95 cursor-pointer shadow-md disabled:opacity-40 disabled:pointer-events-none hover:bg-passport-navy/90"
+            title="Flip Camera"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider">Flip</span>
+          </button>
+
+          {/* Flashlight/Torch Toggle */}
+          <button
+            type="button"
+            onClick={toggleTorch}
+            disabled={!hasTorch || !isScannerActive}
+            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl min-w-[75px] transition active:scale-95 border cursor-pointer bg-[#fffbf2] shadow-sm ${!hasTorch || !isScannerActive ? 'opacity-40 pointer-events-none border-gray-200 text-gray-400' : isTorchOn ? 'border-seal-gold text-seal-gold bg-seal-gold/5 shadow-inner' : 'border-[#8c765c]/30 text-sepia-ink hover:bg-[#8c765c]/5'}`}
+            title={hasTorch ? "Toggle Flashlight" : "Flashlight Unsupported"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider">{isTorchOn ? 'On' : 'Off'}</span>
+          </button>
+        </div>
+      )}
 
       {status === 'scanning' && (
         <div className="text-center mt-8">
           <p className="font-mono uppercase text-seal-gold/70 tracking-widest text-xs mb-6">SCAN RECRUIT BADGE</p>
           
           <div className="bg-passport-ivory paper-texture p-6 rounded-2xl shadow-lg border border-paper-border opacity-90 mx-4">
-            <p className="font-sarabun text-muted-sepia text-center italic text-sm">Waiting for QR Code...</p>
+            <p className="font-sarabun text-muted-sepia text-center italic text-sm">
+              {!isScannerActive ? 'Camera is offline. Start camera to begin.' : 'Waiting for QR Code...'}
+            </p>
           </div>
         </div>
       )}
@@ -172,7 +391,7 @@ export default function ScannerUI({
 
               <button 
                 onClick={resetScanner}
-                className="w-full bg-gradient-to-r from-[#C9A84C] to-[#A8893A] text-passport-navy font-sarabun font-bold text-lg py-4 rounded-full transition-all shadow-md active:scale-95 border-b-4 border-passport-navy/20"
+                className="w-full bg-gradient-to-r from-[#C9A84C] to-[#A8893A] text-passport-navy font-sarabun font-bold text-lg py-4 rounded-full transition-all shadow-md active:scale-95 border-b-4 border-passport-navy/20 cursor-pointer"
               >
                 ยืนยัน — Stamp Issued
               </button>
@@ -197,7 +416,7 @@ export default function ScannerUI({
 
               <button 
                 onClick={resetScanner}
-                className="w-full bg-district-desert text-white font-sarabun font-bold text-lg py-4 rounded-full transition-all shadow-md active:scale-95 border-b-4 border-black/20"
+                className="w-full bg-district-desert text-white font-sarabun font-bold text-lg py-4 rounded-full transition-all shadow-md active:scale-95 border-b-4 border-black/20 cursor-pointer"
               >
                 กลับไปสแกนต่อ
               </button>
@@ -212,7 +431,7 @@ export default function ScannerUI({
 
               <button 
                 onClick={resetScanner}
-                className="w-full bg-ink-red text-white font-sarabun font-bold text-lg py-4 rounded-full transition-all shadow-md active:scale-95 border-b-4 border-black/20"
+                className="w-full bg-ink-red text-white font-sarabun font-bold text-lg py-4 rounded-full transition-all shadow-md active:scale-95 border-b-4 border-black/20 cursor-pointer"
               >
                 สแกนใหม่
               </button>
