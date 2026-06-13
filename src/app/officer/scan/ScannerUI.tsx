@@ -240,26 +240,13 @@ export default function ScannerUI({
         
         {/* Standby screen when camera stream is stopped */}
         {!isScannerActive && !isCameraLoading && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-passport-navy text-passport-ivory paper-texture p-6 text-center">
-            <div className="absolute inset-[6px] border border-seal-gold/30 rounded-xl pointer-events-none"></div>
-            <div className="w-20 h-20 rounded-full border-2 border-seal-gold/40 flex items-center justify-center mb-4 bg-white/5 animate-pulse">
-              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            </div>
-            <h4 className="font-playfair font-bold text-lg text-seal-gold mb-1">Scanner Standby</h4>
-            <p className="font-sarabun text-xs text-muted-sepia max-w-[200px] mb-6">Camera feed is currently offline. Tap below to reactivate stream.</p>
-            <button
-              onClick={() => {
-                if (cameras.length > 0 && currentCameraIndex !== -1) {
-                  startScanner(cameras[currentCameraIndex].id);
-                } else {
-                  // Retry camera permission / list
-                  window.location.reload();
-                }
-              }}
-              className="px-6 py-2.5 bg-seal-gold text-passport-navy font-sarabun font-bold text-xs rounded-full hover:bg-seal-gold/90 transition active:scale-95 shadow-md cursor-pointer"
-            >
-              Start Camera
-            </button>
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#1a1c1e] text-passport-ivory text-center">
+            <div className="absolute inset-4 border border-[#ffffff]/5 rounded-xl pointer-events-none"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-45 mb-2.5">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            <span className="font-mono text-[10px] tracking-widest text-[#C9A84C] opacity-60 uppercase">Camera Standby</span>
           </div>
         )}
 
