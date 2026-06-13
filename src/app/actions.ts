@@ -370,3 +370,33 @@ export async function bulkRemoveRecruits(recruitIds: string[]) {
   });
   revalidatePath('/admin/recruits');
 }
+
+export async function updateRecruitNickname(formData: FormData) {
+  const nickname = formData.get('nickname') as string;
+
+  if (!nickname || !nickname.trim()) {
+    throw new Error('Nickname is required');
+  }
+
+  const session = await getSession();
+  if (!session || session.role !== 'participant') {
+    throw new Error('Unauthorized');
+  }
+
+  const participant = await prisma.participant.findUnique({
+    where: { qrToken: session.token }
+  });
+
+  if (!participant) {
+    throw new Error('Participant not found');
+  }
+
+  await prisma.participant.update({
+    where: { id: participant.id },
+    data: { nickname: nickname.trim() }
+  });
+
+  revalidatePath('/dashboard');
+  revalidatePath('/leaderboard');
+  return { success: true };
+}

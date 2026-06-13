@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { houses } from '@/lib/houses';
 import { logout } from '@/app/actions';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
+import CheckpointGrid from '@/components/CheckpointGrid';
+import EditNicknameModal from '@/components/EditNicknameModal';
 
 export default async function Dashboard() {
   const session = await getSession();
@@ -55,7 +57,6 @@ export default async function Dashboard() {
   const houseConfig = houses[participant.house] || houses['ควาย (Bogo)']; // fallback to Bogo
 
   const districtColors = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#F39C12', '#16A085', '#C9A84C', '#C0392B'];
-  const stampRotations = [-6, 4, -9, 7, -4, 8, -7, 5];
 
   // Fetch active announcement
   const activeAnnouncement = await prisma.announcement.findFirst({
@@ -112,7 +113,10 @@ export default async function Dashboard() {
             <h1 className="text-2xl font-playfair font-bold text-passport-ivory mb-1 text-center">
               {participant.name} {participant.surname}
             </h1>
-            <p className="text-sm font-sarabun text-seal-gold mb-4 text-center">({participant.nickname})</p>
+            <div className="flex items-center justify-center gap-1.5 mb-4 group/nick">
+              <span className="text-sm font-sarabun text-seal-gold text-center">{participant.nickname}</span>
+              <EditNicknameModal initialNickname={participant.nickname} />
+            </div>
             
             <div className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-sarabun font-bold shadow-sm ${houseConfig.bgClass} ${houseConfig.textClass}`}>
               บ้าน {houseConfig.name}
@@ -139,61 +143,10 @@ export default async function Dashboard() {
             <div className="h-px bg-paper-border flex-grow"></div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 gap-y-6 px-2">
-            {participant.hunt.checkpoints.map((cp, index) => {
-              const stamp = participant.stamps.find(s => s.checkpointId === cp.id);
-              const isStamped = !!stamp;
-              const color = districtColors[index % districtColors.length];
-              const rotation = stampRotations[index % stampRotations.length];
-              
-              return (
-                <div key={cp.id} className="flex flex-col items-center justify-center aspect-square relative">
-                  {isStamped ? (
-                    <div 
-                      className="relative w-[88px] h-[88px] rounded-full border-2 flex flex-col items-center justify-center p-1 stamp-edge"
-                      style={{ 
-                        '--stamp-rotate': `${rotation}deg`,
-                        transform: 'rotate(var(--stamp-rotate))',
-                        borderColor: color,
-                        color: color,
-                      } as React.CSSProperties}
-                    >
-                      {/* Inner Circle */}
-                      <div className="absolute inset-1 border border-current rounded-full opacity-60"></div>
-                      
-                      {/* Curved Top Text (Simulated with absolute positioning for simplicity or standard text) */}
-                      <div className="absolute top-2 w-full text-center px-2">
-                        <span className="font-mono text-[7px] font-bold uppercase leading-tight line-clamp-1">{cp.name}</span>
-                      </div>
-                      
-                      {/* Center Icon */}
-                      <span className="text-xl mt-1 opacity-90">{cp.zootopiaIcon}</span>
-                      
-                      {/* Date Bottom */}
-                      {stamp && (
-                        <div className="absolute bottom-2 w-full text-center">
-                          <span className="font-mono text-[6px] font-bold">
-                            {stamp.stampedAt.toLocaleDateString('en-GB')}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Paper Grain overlay to make it look printed onto the paper */}
-                      <div className="absolute inset-0 paper-texture opacity-10 rounded-full mix-blend-overlay pointer-events-none"></div>
-                    </div>
-                  ) : (
-                    <div className="relative w-[88px] h-[88px] rounded-full border-2 border-dashed border-muted-sepia/40 flex flex-col items-center justify-center animate-slot-float">
-                      <span className="text-2xl opacity-20 grayscale mb-1">{cp.zootopiaIcon}</span>
-                      <span className="font-playfair text-xl font-bold text-muted-sepia/30 absolute">?</span>
-                    </div>
-                  )}
-                  <div className="mt-3 text-center w-full px-1">
-                     <p className="font-mono text-[8px] text-muted-sepia uppercase tracking-wider line-clamp-1">{cp.name}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <CheckpointGrid 
+            checkpoints={participant.hunt.checkpoints} 
+            stamps={participant.stamps} 
+          />
           
           {totalCheckpoints === 0 && (
             <p className="text-center font-sarabun text-muted-sepia py-4">ยังไม่มีฐานในระบบ</p>
