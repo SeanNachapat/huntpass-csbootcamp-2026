@@ -32,6 +32,23 @@ export default async function OfficerScanPage() {
     redirect('/officer');
   }
 
+  const recentStamps = await prisma.stamp.findMany({
+    where: { checkpointId: officer.checkpointId || '' },
+    orderBy: { stampedAt: 'desc' },
+    take: 5,
+    include: {
+      participant: true
+    }
+  });
+
+  const initialRecentScans = recentStamps.map(s => ({
+    id: s.id,
+    participantName: `${s.participant.name} ${s.participant.surname}`,
+    nickname: s.participant.nickname,
+    house: s.participant.house,
+    stampedAt: s.stampedAt.toISOString()
+  }));
+
   return (
     <div className="flex flex-col min-h-screen bg-deep-night/60 backdrop-blur-sm text-white relative">
       <header className="bg-passport-navy p-4 shadow-md flex justify-between items-center sticky top-0 z-10 w-full">
@@ -63,6 +80,7 @@ export default async function OfficerScanPage() {
                 checkpointName={officer.checkpoint.name} 
                 checkpointIcon={officer.checkpoint.zootopiaIcon ?? undefined}
                 checkpointColor={checkpointColor}
+                initialRecentScans={initialRecentScans}
               />
             );
           })()}

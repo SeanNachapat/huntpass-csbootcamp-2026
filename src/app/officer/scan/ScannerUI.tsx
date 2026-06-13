@@ -12,14 +12,24 @@ interface CameraDevice {
   label: string;
 }
 
+interface RecentScan {
+  id: string;
+  participantName: string;
+  nickname: string;
+  house: string;
+  stampedAt: string;
+}
+
 export default function ScannerUI({ 
   checkpointName, 
   checkpointIcon = '📍', 
-  checkpointColor = '#C9A84C' 
+  checkpointColor = '#C9A84C',
+  initialRecentScans = []
 }: { 
   checkpointName?: string, 
   checkpointIcon?: string, 
-  checkpointColor?: string 
+  checkpointColor?: string,
+  initialRecentScans?: RecentScan[]
 }) {
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const isProcessingRef = useRef<boolean>(false);
@@ -36,6 +46,7 @@ export default function ScannerUI({
   const [isCameraLoading, setIsCameraLoading] = useState<boolean>(true);
   const [hasTorch, setHasTorch] = useState<boolean>(false);
   const [isTorchOn, setIsTorchOn] = useState<boolean>(false);
+  const [recentScans, setRecentScans] = useState<RecentScan[]>(initialRecentScans);
 
   const startScanner = async (cameraId: string) => {
     if (!html5QrCodeRef.current) return;
@@ -181,6 +192,15 @@ export default function ScannerUI({
         setParticipantName(result.participantName);
         setHouse(result.speciesAvatar || 'ควาย (Bogo)'); 
         setMessage('Stamp recorded successfully!');
+
+        const newScan: RecentScan = {
+          id: result.stampId || Math.random().toString(),
+          participantName: result.participantName,
+          nickname: result.nickname || '',
+          house: result.speciesAvatar || 'ควาย (Bogo)',
+          stampedAt: result.stampedAt || new Date().toISOString()
+        };
+        setRecentScans(prev => [newScan, ...prev.slice(0, 4)]);
       } else if (result.error === 'Already stamped') {
         setStatus('already_stamped');
         setParticipantName(result.participantName);
@@ -336,13 +356,62 @@ export default function ScannerUI({
       )}
 
       {status === 'scanning' && (
-        <div className="text-center mt-8">
-          <p className="font-mono uppercase text-seal-gold/70 tracking-widest text-xs mb-6">SCAN RECRUIT BADGE</p>
-          
-          <div className="bg-passport-ivory paper-texture p-6 rounded-2xl shadow-lg border border-paper-border opacity-90 mx-4">
-            <p className="font-sarabun text-muted-sepia text-center italic text-sm">
-              {!isScannerActive ? 'Camera is offline. Start camera to begin.' : 'Waiting for QR Code...'}
-            </p>
+        <div className="flex flex-col w-full">
+          <div className="text-center mt-8">
+            <p className="font-mono uppercase text-seal-gold/70 tracking-widest text-xs mb-6">SCAN RECRUIT BADGE</p>
+            
+            <div className="bg-passport-ivory paper-texture p-6 rounded-2xl shadow-lg border border-paper-border opacity-90 mx-4">
+              <p className="font-sarabun text-muted-sepia text-center italic text-sm">
+                {!isScannerActive ? 'Camera is offline. Start camera to begin.' : 'Waiting for QR Code...'}
+              </p>
+            </div>
+          </div>
+
+          {/* Log of recently scanned recruits */}
+          <div className="mt-8 px-4 w-full">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-px bg-paper-border/40 flex-grow"></span>
+              <span className="font-mono text-xs font-bold text-seal-gold/70 tracking-widest uppercase">RECENTLY SCANNED</span>
+              <span className="h-px bg-paper-border/40 flex-grow"></span>
+            </div>
+
+            {recentScans.length > 0 ? (
+              <div className="space-y-3">
+                {recentScans.map(scan => {
+                  const config = houses[scan.house] || houses['ควาย (Bogo)'];
+                  return (
+                    <div key={scan.id} className="bg-passport-ivory paper-texture p-3 rounded-xl border border-paper-border flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 border border-paper-border overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-seal-gold/30">
+                          <img src={config.image} alt={config.name} className="w-2/3 h-2/3 object-cover" />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-sarabun font-bold text-sepia-ink text-xs leading-none">
+                            {scan.participantName}
+                          </div>
+                          <div className="text-[9px] font-sarabun text-muted-sepia flex items-center gap-1.5 mt-1">
+                            <span className={`px-1 rounded-[3px] text-[7px] font-bold text-white uppercase ${config.bgClass}`}>
+                              {config.name}
+                            </span>
+                            <span>({scan.nickname})</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right shrink-0">
+                        <span className="font-mono text-[9px] text-muted-sepia bg-passport-navy/5 px-1.5 py-0.5 rounded border border-paper-border font-bold">
+                          {new Date(scan.stampedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6 border border-dashed border-paper-border rounded-xl italic font-sarabun text-xs text-muted-sepia bg-white/40">
+                No recent scans at this checkpoint yet.
+              </div>
+            )}
           </div>
         </div>
       )}

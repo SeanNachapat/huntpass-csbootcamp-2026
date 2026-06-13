@@ -48,7 +48,7 @@ export default function ChangePasswordModal() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-passport-navy/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed top-0 left-0 w-screen h-screen bg-passport-navy/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-passport-ivory paper-texture rounded-2xl shadow-2xl w-full max-w-sm border border-seal-gold/50 overflow-hidden relative animate-in zoom-in-95 duration-200">
             <div className="absolute inset-[6px] border border-seal-gold/30 rounded-xl pointer-events-none"></div>
             
