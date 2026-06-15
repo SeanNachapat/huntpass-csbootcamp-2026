@@ -144,8 +144,8 @@ export default async function Dashboard() {
           </div>
 
           <CheckpointGrid 
-            checkpoints={participant.hunt.checkpoints} 
-            stamps={participant.stamps} 
+            checkpoints={JSON.parse(JSON.stringify(participant.hunt.checkpoints))} 
+            stamps={JSON.parse(JSON.stringify(participant.stamps))} 
           />
           
           {totalCheckpoints === 0 && (
