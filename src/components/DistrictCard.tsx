@@ -85,15 +85,15 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
               <input type="hidden" name="checkpointId" value={cp.id} />
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Display Name</label>
-                <input type="text" name="displayName" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                <input type="text" name="displayName" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Username</label>
-                <input type="text" name="username" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                <input type="text" name="username" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Password</label>
-                <input type="password" name="password" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                <input type="password" name="password" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
               </div>
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setIsAddOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
@@ -118,15 +118,15 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
               <input type="hidden" name="officerId" value={editingOfficer.id} />
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Display Name</label>
-                <input type="text" name="displayName" defaultValue={editingOfficer.displayName} className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                <input type="text" name="displayName" defaultValue={editingOfficer.displayName} className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Username</label>
-                <input type="text" name="username" defaultValue={editingOfficer.username} className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                <input type="text" name="username" defaultValue={editingOfficer.username} className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">New Password</label>
-                <input type="password" name="password" placeholder="(Leave blank to keep current)" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
+                <input type="password" name="password" placeholder="(Leave blank to keep current)" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
               </div>
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setEditingOfficer(null)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
@@ -151,15 +151,15 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
               <input type="hidden" name="checkpointId" value={cp.id} />
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">District Name</label>
-                <input type="text" name="name" defaultValue={cp.name} className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                <input type="text" name="name" defaultValue={cp.name} className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Emoji Icon</label>
-                <input type="text" name="icon" defaultValue={cp.zootopiaIcon || ''} className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
+                <input type="text" name="icon" defaultValue={cp.zootopiaIcon || ''} className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Hint (คำใบ้)</label>
-                <textarea name="hint" rows={3} defaultValue={cp.hint || ''} placeholder="e.g. Look under the big polar bear rug..." className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition resize-none" />
+                <textarea name="hint" rows={3} defaultValue={cp.hint || ''} placeholder="e.g. Look under the big polar bear rug..." className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition resize-none" />
               </div>
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setIsEditDistrictOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>

@@ -74,7 +74,7 @@ export default function EditNicknameModal({ initialNickname }: { initialNickname
                     name="nickname" 
                     defaultValue={initialNickname}
                     maxLength={20}
-                    className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none shadow-sm" 
+                    className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none shadow-sm" 
                     required 
                   />
                 </div>

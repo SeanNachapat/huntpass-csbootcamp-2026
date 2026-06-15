@@ -25,14 +25,18 @@ export default function ChangePasswordModal() {
     }
 
     try {
-      await changeRecruitPassword(formData);
-      setSuccessMsg('เปลี่ยนรหัสผ่านสำเร็จ! (Password changed successfully)');
-      setTimeout(() => {
-        setIsOpen(false);
-        setSuccessMsg('');
-      }, 2000);
+      const res = await changeRecruitPassword(formData);
+      if (res && 'error' in res && res.error) {
+        setErrorMsg(res.error);
+      } else {
+        setSuccessMsg('เปลี่ยนรหัสผ่านสำเร็จ! (Password changed successfully)');
+        setTimeout(() => {
+          setIsOpen(false);
+          setSuccessMsg('');
+        }, 2000);
+      }
     } catch (err: any) {
-      setErrorMsg(err.message || 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+      setErrorMsg('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
     } finally {
       setIsSubmitting(false);
     }
@@ -80,7 +84,7 @@ export default function ChangePasswordModal() {
                   <input 
                     type="password" 
                     name="currentPassword" 
-                    className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none shadow-sm" 
+                    className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none shadow-sm" 
                     required 
                   />
                 </div>
@@ -89,7 +93,7 @@ export default function ChangePasswordModal() {
                   <input 
                     type="password" 
                     name="newPassword" 
-                    className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none shadow-sm" 
+                    className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none shadow-sm" 
                     required 
                   />
                 </div>
@@ -98,7 +102,7 @@ export default function ChangePasswordModal() {
                   <input 
                     type="password" 
                     name="confirmPassword" 
-                    className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none shadow-sm" 
+                    className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none shadow-sm" 
                     required 
                   />
                 </div>

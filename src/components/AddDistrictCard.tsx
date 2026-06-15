@@ -32,11 +32,11 @@ export default function AddDistrictCard({ huntId }: { huntId: string }) {
               <input type="hidden" name="huntId" value={huntId} />
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">District Name</label>
-                <input type="text" name="name" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                <input type="text" name="name" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Emoji Icon</label>
-                <input type="text" name="icon" placeholder="e.g. 🏢" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
+                <input type="text" name="icon" placeholder="e.g. 🏢" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
               </div>
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setIsOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>

@@ -110,20 +110,20 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1 block">Name (ชื่อ)</label>
-                  <input type="text" name="name" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
+                  <input type="text" name="name" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
                 </div>
                 <div>
                   <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1 block">Surname (นามสกุล)</label>
-                  <input type="text" name="surname" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
+                  <input type="text" name="surname" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1 block">Nickname (ชื่อเล่น)</label>
-                <input type="text" name="nickname" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
+                <input type="text" name="nickname" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1 block">House (บ้าน)</label>
-                <select name="house" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required>
+                <select name="house" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required>
                   {Object.keys(houses).map(h => (
                     <option key={h} value={h}>{h}</option>
                   ))}
@@ -132,11 +132,11 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
               <div className="pt-4 mt-2 border-t border-paper-border space-y-4">
                 <div>
                   <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1 block">Username</label>
-                  <input type="text" name="username" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
+                  <input type="text" name="username" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
                 </div>
                 <div>
                   <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1 block">Password</label>
-                  <input type="password" name="password" className="w-full bg-white border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
+                  <input type="password" name="password" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none" required />
                 </div>
               </div>
               <div className="flex gap-3 mt-4">

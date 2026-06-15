@@ -326,12 +326,12 @@ export async function changeRecruitPassword(formData: FormData) {
   const newPassword = formData.get('newPassword') as string;
 
   if (!currentPassword || !newPassword) {
-    throw new Error('Current and new password are required');
+    return { error: 'กรุณากรอกข้อมูลให้ครบถ้วน (Current and new password are required)' };
   }
 
   const session = await getSession();
   if (!session || session.role !== 'participant') {
-    throw new Error('Unauthorized');
+    return { error: 'ไม่ได้รับอนุญาต (Unauthorized)' };
   }
 
   const participant = await prisma.participant.findUnique({
@@ -339,12 +339,16 @@ export async function changeRecruitPassword(formData: FormData) {
   });
 
   if (!participant) {
-    throw new Error('Participant not found');
+    return { error: 'ไม่พบข้อมูลผู้ใช้ (Participant not found)' };
   }
 
   const hashedCurrent = crypto.createHash('sha256').update(currentPassword).digest('hex');
   if (participant.password !== hashedCurrent && participant.password !== currentPassword) {
-    throw new Error('Current password is incorrect');
+    return { error: 'รหัสผ่านปัจจุบันไม่ถูกต้อง (Current password is incorrect)' };
+  }
+
+  if (currentPassword === newPassword) {
+    return { error: 'รหัสผ่านใหม่ต้องไม่ตรงกับรหัสผ่านปัจจุบัน (New password cannot be the same as current password)' };
   }
 
   const hashedNew = crypto.createHash('sha256').update(newPassword).digest('hex');
