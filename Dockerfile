@@ -56,4 +56,4 @@ ENV HOSTNAME="0.0.0.0"
 # Point SQLite database to the bind-mounted file in data directory
 ENV DATABASE_URL="file:/app/data/dev.db"
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
