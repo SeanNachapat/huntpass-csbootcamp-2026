@@ -37,6 +37,9 @@ RUN adduser --system --uid 1001 nextjs
 # Create data directory for SQLite
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
+# Install prisma CLI globally to enable offline database migration on startup
+RUN npm install -g prisma@6.0.0
+
 COPY --from=builder /app/prisma ./prisma
 
 RUN mkdir .next
@@ -56,4 +59,5 @@ ENV HOSTNAME="0.0.0.0"
 # Point SQLite database to the bind-mounted file in data directory
 ENV DATABASE_URL="file:/app/data/dev.db"
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+CMD ["sh", "-c", "prisma migrate deploy && node server.js"]
+
