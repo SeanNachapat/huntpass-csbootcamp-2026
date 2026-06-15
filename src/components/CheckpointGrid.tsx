@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, HelpCircle } from 'lucide-react';
+import Portal from './Portal';
 
 interface Checkpoint {
   id: string;
@@ -107,92 +108,92 @@ export default function CheckpointGrid({ checkpoints, stamps }: CheckpointGridPr
 
       {/* Parchment Scroll Hint Popup Modal */}
       {selectedCheckpoint && (
-        <div className="fixed inset-0 bg-passport-navy/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-300 relative text-left">
-            
-            {/* Close Button above the scroll */}
-            <div className="flex justify-end mb-2 mr-2">
+        <Portal>
+          <div className="fixed inset-0 bg-passport-navy/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-300 relative text-left flex flex-col max-h-[85vh]">
+              
+              {/* Close Button */}
               <button 
                 onClick={() => setSelectedCheckpoint(null)}
-                className="bg-passport-ivory hover:bg-white text-passport-navy rounded-full p-2 border border-paper-border shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+                className="absolute -top-3 -right-3 bg-passport-ivory hover:bg-white text-passport-navy rounded-full p-1.5 border border-paper-border shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer z-30"
               >
-                <X size={18} strokeWidth={2.5} />
+                <X size={16} strokeWidth={2.5} />
               </button>
-            </div>
 
-            {/* Rolled Paper Top rod */}
-            <div className="h-6 bg-gradient-to-b from-[#d2c09c] via-[#eae0c8] to-[#cbb78d] rounded-t-xl shadow-md border-b border-[#a8956b] relative z-20 flex justify-between px-6">
-              <div className="w-3 h-full bg-amber-900/40 rounded-l shadow-inner"></div>
-              <div className="w-3 h-full bg-amber-900/40 rounded-r shadow-inner"></div>
-            </div>
-
-            {/* Scroll Body */}
-            <div className="bg-[#fdf6e2] paper-texture border-l-8 border-r-8 border-double border-[#8b5a2b] px-8 py-10 shadow-2xl relative text-[#4A3B2C] z-10 min-h-[260px] flex flex-col justify-between overflow-hidden">
-              {/* Subtle background graphics */}
-              <div className="absolute inset-0 opacity-5 pointer-events-none flex items-center justify-center select-none">
-                <HelpCircle size={180} />
+              {/* Rolled Paper Top rod */}
+              <div className="h-6 bg-gradient-to-b from-[#d2c09c] via-[#eae0c8] to-[#cbb78d] rounded-t-xl shadow-md border-b border-[#a8956b] relative z-20 flex justify-between px-6 shrink-0">
+                <div className="w-3 h-full bg-amber-900/40 rounded-l shadow-inner"></div>
+                <div className="w-3 h-full bg-amber-900/40 rounded-r shadow-inner"></div>
               </div>
 
-              <div>
-                {/* Header */}
-                <div className="text-center mb-6 pb-3 border-b border-[#e1d5ba]/80 relative z-10">
-                  <div className="text-3xl mb-1 filter drop-shadow-sm select-none">{selectedCheckpoint.zootopiaIcon}</div>
-                  <h3 className="font-playfair font-bold text-[#2c1d11] text-2xl tracking-wide select-text">
-                    {selectedCheckpoint.name}
-                  </h3>
-                  <p className="font-mono text-[9px] text-[#8c765c] tracking-widest mt-1">ZPD DISTRICT FILE</p>
+              {/* Scroll Body */}
+              <div className="bg-[#fdf6e2] paper-texture border-l-8 border-r-8 border-double border-[#8b5a2b] px-8 py-10 shadow-2xl relative text-[#4A3B2C] z-10 overflow-y-auto custom-scrollbar flex flex-col justify-between flex-grow">
+                {/* Subtle background graphics */}
+                <div className="absolute inset-0 opacity-5 pointer-events-none flex items-center justify-center select-none">
+                  <HelpCircle size={180} />
                 </div>
 
-                {/* Hint Content */}
-                <div className="space-y-3 relative z-10 text-center px-2">
-                  <p className="font-playfair italic text-[#8c765c] text-xs font-bold uppercase tracking-wider">District Clue / คำใบ้</p>
-                  <p className="font-sarabun font-medium text-sm leading-relaxed text-[#4e3c2b] whitespace-pre-wrap select-text">
-                    {selectedCheckpoint.hint || 'No clue has been provided for this district yet. Keep searching!'}
-                  </p>
-                </div>
-              </div>
+                <div>
+                  {/* Header */}
+                  <div className="text-center mb-6 pb-3 border-b border-[#e1d5ba]/80 relative z-10">
+                    <div className="text-3xl mb-1 filter drop-shadow-sm select-none">{selectedCheckpoint.zootopiaIcon}</div>
+                    <h3 className="font-playfair font-bold text-[#2c1d11] text-2xl tracking-wide select-text">
+                      {selectedCheckpoint.name}
+                    </h3>
+                    <p className="font-mono text-[9px] text-[#8c765c] tracking-widest mt-1">ZPD DISTRICT FILE</p>
+                  </div>
 
-              {/* Optional verified stamp */}
-              {isStamped && activeStamp && (
-                <div 
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-20 animate-stamp-slam"
-                  style={{
-                    transform: 'rotate(-10deg)',
-                  }}
-                >
-                  <div className="border-4 border-double border-ink-red/80 px-6 py-3 rounded-xl flex flex-col items-center justify-center bg-transparent text-ink-red/85 uppercase font-sans font-black tracking-widest border-spacing-2 stamp-edge max-w-[200px] text-center shadow-sm">
-                    <span className="text-[9px] tracking-[0.2em] font-mono opacity-80">CASE CLOSED</span>
-                    <span className="text-lg font-extrabold mt-0.5 leading-none">VERIFIED</span>
-                    <span className="text-[8px] font-mono mt-1 opacity-70">
-                      {formatStampDate(activeStamp.stampedAt)}
-                    </span>
+                  {/* Hint Content */}
+                  <div className="space-y-3 relative z-10 text-center px-2">
+                    <p className="font-playfair italic text-[#8c765c] text-xs font-bold uppercase tracking-wider">District Clue / คำใบ้</p>
+                    <p className="font-sarabun font-medium text-sm leading-relaxed text-[#4e3c2b] whitespace-pre-wrap select-text">
+                      {selectedCheckpoint.hint || 'No clue has been provided for this district yet. Keep searching!'}
+                    </p>
                   </div>
                 </div>
-              )}
 
-              {/* Status Indicator at the bottom */}
-              <div className="mt-8 pt-4 border-t border-[#e1d5ba]/60 flex items-center justify-center relative z-10">
-                {isStamped ? (
-                  <span className="text-emerald-700 font-sarabun font-bold text-xs flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full shadow-sm">
-                    ✓ Clue Solved (ไขคดีแล้ว)
-                  </span>
-                ) : (
-                  <span className="text-[#8c765c] font-sarabun font-bold text-xs flex items-center gap-1.5 bg-white/50 border border-[#e1d5ba]/80 px-3 py-1 rounded-full">
-                    🔎 Pending Investigation (กำลังสืบสวน)
-                  </span>
+                {/* Optional verified stamp */}
+                {isStamped && activeStamp && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-20 animate-stamp-slam"
+                    style={{
+                      transform: 'rotate(-10deg)',
+                    }}
+                  >
+                    <div className="border-4 border-double border-ink-red/80 px-6 py-3 rounded-xl flex flex-col items-center justify-center bg-transparent text-ink-red/85 uppercase font-sans font-black tracking-widest border-spacing-2 stamp-edge max-w-[200px] text-center shadow-sm">
+                      <span className="text-[9px] tracking-[0.2em] font-mono opacity-80">CASE CLOSED</span>
+                      <span className="text-lg font-extrabold mt-0.5 leading-none">VERIFIED</span>
+                      <span className="text-[8px] font-mono mt-1 opacity-70">
+                        {formatStampDate(activeStamp.stampedAt)}
+                      </span>
+                    </div>
+                  </div>
                 )}
+
+                {/* Status Indicator at the bottom */}
+                <div className="mt-8 pt-4 border-t border-[#e1d5ba]/60 flex items-center justify-center relative z-10">
+                  {isStamped ? (
+                    <span className="text-emerald-700 font-sarabun font-bold text-xs flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full shadow-sm">
+                      ✓ Clue Solved (ไขคดีแล้ว)
+                    </span>
+                  ) : (
+                    <span className="text-[#8c765c] font-sarabun font-bold text-xs flex items-center gap-1.5 bg-white/50 border border-[#e1d5ba]/80 px-3 py-1 rounded-full">
+                      🔎 Pending Investigation (กำลังสืบสวน)
+                    </span>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Rolled Paper Bottom rod */}
+              <div className="h-6 bg-gradient-to-t from-[#d2c09c] via-[#eae0c8] to-[#cbb78d] rounded-b-xl shadow-md border-t border-[#a8956b] relative z-20 flex justify-between px-6 shrink-0">
+                <div className="w-3 h-full bg-amber-900/40 rounded-l shadow-inner"></div>
+                <div className="w-3 h-full bg-amber-900/40 rounded-r shadow-inner"></div>
               </div>
 
             </div>
-
-            {/* Rolled Paper Bottom rod */}
-            <div className="h-6 bg-gradient-to-t from-[#d2c09c] via-[#eae0c8] to-[#cbb78d] rounded-b-xl shadow-md border-t border-[#a8956b] relative z-20 flex justify-between px-6">
-              <div className="w-3 h-full bg-amber-900/40 rounded-l shadow-inner"></div>
-              <div className="w-3 h-full bg-amber-900/40 rounded-r shadow-inner"></div>
-            </div>
-
           </div>
-        </div>
+        </Portal>
       )}
     </>
   );
