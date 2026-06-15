@@ -88,7 +88,21 @@ export default function RecruitRow({
               </h3>
               <button onClick={() => setIsEditOpen(false)} className="text-muted-sepia hover:text-sepia-ink bg-white rounded-full p-1.5 border border-paper-border shadow-sm"><X size={16}/></button>
             </div>
-            <form action={async (fd) => { await updateRecruit(fd); setIsEditOpen(false); }} className="p-6 flex flex-col gap-4">
+            <form 
+              action={async (fd) => {
+                try {
+                  const res = await updateRecruit(fd);
+                  if (res && 'error' in res && res.error) {
+                    alert(res.error);
+                  } else {
+                    setIsEditOpen(false);
+                  }
+                } catch (err) {
+                  alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + String(err));
+                }
+              }}
+              className="p-6 flex flex-col gap-4"
+            >
               <input type="hidden" name="recruitId" value={recruit.id} />
               
               <div className="grid grid-cols-2 gap-4">

@@ -105,7 +105,21 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
               </h3>
               <button onClick={() => setIsAddOpen(false)} className="text-muted-sepia hover:text-sepia-ink bg-white rounded-full p-1.5 border border-paper-border shadow-sm"><X size={16}/></button>
             </div>
-            <form action={async (fd) => { await addRecruit(fd); setIsAddOpen(false); }} className="p-6 flex flex-col gap-4">
+            <form 
+              action={async (fd) => { 
+                try {
+                  const res = await addRecruit(fd); 
+                  if (res && 'error' in res && res.error) {
+                    alert(res.error);
+                  } else {
+                    setIsAddOpen(false); 
+                  }
+                } catch (err) {
+                  alert('เกิดข้อผิดพลาดในการลงทะเบียน: ' + String(err));
+                }
+              }} 
+              className="p-6 flex flex-col gap-4"
+            >
               <input type="hidden" name="huntId" value={huntId} />
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -162,10 +176,14 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
             <form action={async (fd) => { 
                 setIsImporting(true);
                 try {
-                  await bulkImportRecruits(fd); 
-                  setIsImportOpen(false);
+                  const res = await bulkImportRecruits(fd); 
+                  if (res && 'error' in res && res.error) {
+                    alert(res.error);
+                  } else {
+                    setIsImportOpen(false);
+                  }
                 } catch (err) {
-                  alert(String(err));
+                  alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล: ' + String(err));
                 } finally {
                   setIsImporting(false);
                 }

@@ -144,25 +144,44 @@ export async function addRecruit(formData: FormData) {
   const password = formData.get('password') as string;
 
   if (!huntId || !name || !surname || !nickname || !house || !username || !password) {
-    throw new Error('All fields are required');
+    return { error: 'กรุณากรอกข้อมูลให้ครบถ้วน (All fields are required)' };
+  }
+
+  const existingUser = await prisma.participant.findUnique({
+    where: { username }
+  });
+  if (existingUser) {
+    return { error: `ชื่อผู้ใช้งาน @${username} ถูกใช้ไปแล้ว (Username @${username} is already taken)` };
+  }
+
+  const existingStaff = await prisma.staff.findUnique({
+    where: { username }
+  });
+  if (existingStaff) {
+    return { error: `ชื่อผู้ใช้งาน @${username} ถูกใช้ไปแล้ว (Username @${username} is already taken)` };
   }
 
   const qrToken = crypto.randomBytes(16).toString('hex');
 
-  await prisma.participant.create({
-    data: {
-      huntId,
-      name,
-      surname,
-      nickname,
-      house,
-      username,
-      password,
-      qrToken
-    }
-  });
+  try {
+    await prisma.participant.create({
+      data: {
+        huntId,
+        name,
+        surname,
+        nickname,
+        house,
+        username,
+        password,
+        qrToken
+      }
+    });
 
-  revalidatePath('/admin');
+    revalidatePath('/admin');
+    return { success: true };
+  } catch (err: any) {
+    return { error: `เกิดข้อผิดพลาดในการลงทะเบียน: ${err.message || String(err)}` };
+  }
 }
 
 export async function updateRecruit(formData: FormData) {
@@ -175,7 +194,24 @@ export async function updateRecruit(formData: FormData) {
   const password = formData.get('password') as string;
 
   if (!recruitId || !name || !surname || !nickname || !house || !username) {
-    throw new Error('All fields except password are required');
+    return { error: 'กรุณากรอกข้อมูลให้ครบถ้วน (All fields except password are required)' };
+  }
+
+  const existingUser = await prisma.participant.findFirst({
+    where: { 
+      username,
+      NOT: { id: recruitId }
+    }
+  });
+  if (existingUser) {
+    return { error: `ชื่อผู้ใช้งาน @${username} ถูกใช้ไปแล้ว (Username @${username} is already taken)` };
+  }
+
+  const existingStaff = await prisma.staff.findUnique({
+    where: { username }
+  });
+  if (existingStaff) {
+    return { error: `ชื่อผู้ใช้งาน @${username} ถูกใช้ไปแล้ว (Username @${username} is already taken)` };
   }
 
   const dataToUpdate: any = {
@@ -190,12 +226,17 @@ export async function updateRecruit(formData: FormData) {
     dataToUpdate.password = password;
   }
 
-  await prisma.participant.update({
-    where: { id: recruitId },
-    data: dataToUpdate,
-  });
+  try {
+    await prisma.participant.update({
+      where: { id: recruitId },
+      data: dataToUpdate,
+    });
 
-  revalidatePath('/admin/recruits');
+    revalidatePath('/admin/recruits');
+    return { success: true };
+  } catch (err: any) {
+    return { error: `เกิดข้อผิดพลาดในการบันทึกข้อมูล: ${err.message || String(err)}` };
+  }
 }
 
 export async function removeRecruit(formData: FormData) {
@@ -211,54 +252,92 @@ export async function bulkImportRecruits(formData: FormData) {
   const huntId = formData.get('huntId') as string;
   const file = formData.get('file') as File;
   
-  if (!huntId || !file) throw new Error('Missing required fields');
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  
-  let rawData: any[] = [];
-  
-  if (file.name.endsWith('.json')) {
-    const text = buffer.toString('utf-8');
-    rawData = JSON.parse(text);
-  } else {
-    const workbook = read(buffer, { type: 'buffer', codepage: 65001 });
-    const firstSheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[firstSheetName];
-    rawData = utils.sheet_to_json(worksheet);
+  if (!huntId || !file) {
+    return { error: 'กรุณากรอกข้อมูลให้ครบถ้วน (Missing required fields)' };
   }
 
-  const recruitsToCreate = rawData.map((rawRow: any) => {
-    // Sanitize row by trimming all keys and values to ignore hidden blank spaces
-    const row: any = {};
-    for (const key of Object.keys(rawRow)) {
-      if (rawRow[key] !== null && rawRow[key] !== undefined) {
-        row[key.trim()] = String(rawRow[key]).trim();
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    
+    let rawData: any[] = [];
+    
+    if (file.name.endsWith('.json')) {
+      const text = buffer.toString('utf-8');
+      rawData = JSON.parse(text);
+    } else {
+      const workbook = read(buffer, { type: 'buffer', codepage: 65001 });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      rawData = utils.sheet_to_json(worksheet);
+    }
+
+    // Filter out completely empty rows (common in CSVs with trailing commas/newlines)
+    const validRawData = rawData.filter(row => {
+      return Object.values(row).some(val => val !== null && val !== undefined && String(val).trim() !== '');
+    });
+
+    if (validRawData.length === 0) {
+      return { error: 'ไม่พบข้อมูลในไฟล์ (No data found in the uploaded file)' };
+    }
+
+    const recruitsToCreate = [];
+    const usernames = new Set<string>();
+
+    for (let i = 0; i < validRawData.length; i++) {
+      const rawRow = validRawData[i];
+      const row: any = {};
+      for (const key of Object.keys(rawRow)) {
+        if (rawRow[key] !== null && rawRow[key] !== undefined) {
+          row[key.trim()] = String(rawRow[key]).trim();
+        }
       }
+
+      if (!row.name || !row.surname || !row.nickname || !row.house || !row.username || !row.password) {
+        return { error: `แถวที่ ${i + 1} มีข้อมูลไม่ครบถ้วน (Missing required fields in row ${i + 1}): ${JSON.stringify(rawRow)}` };
+      }
+
+      if (usernames.has(row.username)) {
+        return { error: `พบชื่อผู้ใช้งานซ้ำในไฟล์: @${row.username} (Duplicate username @${row.username} found in file)` };
+      }
+      usernames.add(row.username);
+
+      const existingUser = await prisma.participant.findUnique({
+        where: { username: row.username }
+      });
+      if (existingUser) {
+        return { error: `ชื่อผู้ใช้งาน @${row.username} ถูกใช้ไปแล้ว (Username @${row.username} is already taken)` };
+      }
+
+      const existingStaff = await prisma.staff.findUnique({
+        where: { username: row.username }
+      });
+      if (existingStaff) {
+        return { error: `ชื่อผู้ใช้งาน @${row.username} ถูกใช้ไปแล้ว (Username @${row.username} is already taken)` };
+      }
+
+      const qrToken = crypto.randomBytes(32).toString('hex');
+
+      recruitsToCreate.push({
+        huntId,
+        name: row.name,
+        surname: row.surname,
+        nickname: row.nickname,
+        house: row.house,
+        username: row.username,
+        password: row.password,
+        qrToken,
+      });
     }
 
-    if (!row.name || !row.surname || !row.nickname || !row.house || !row.username || !row.password) {
-      throw new Error(`Missing required fields in row: ${JSON.stringify(rawRow)}`);
-    }
+    await prisma.participant.createMany({
+      data: recruitsToCreate,
+    });
 
-    const qrToken = crypto.randomBytes(32).toString('hex');
-
-    return {
-      huntId,
-      name: row.name,
-      surname: row.surname,
-      nickname: row.nickname,
-      house: row.house,
-      username: row.username,
-      password: row.password,
-      qrToken,
-    };
-  });
-
-  await prisma.participant.createMany({
-    data: recruitsToCreate,
-  });
-
-  revalidatePath('/admin/recruits');
+    revalidatePath('/admin/recruits');
+    return { success: true };
+  } catch (err: any) {
+    return { error: `เกิดข้อผิดพลาดในการนำเข้าข้อมูล: ${err.message || String(err)}` };
+  }
 }
 
 export async function updateOfficer(formData: FormData) {
