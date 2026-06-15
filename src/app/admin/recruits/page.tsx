@@ -3,7 +3,7 @@ import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import { Users, ShieldCheck } from 'lucide-react';
 import RecruitManager from '@/components/RecruitManager';
-import RecruitRow from '@/components/RecruitRow';
+import RecruitTable from '@/components/RecruitTable';
 
 export default async function RecruitsPage() {
   const session = await getSession();
@@ -38,30 +38,7 @@ export default async function RecruitsPage() {
 
           <RecruitManager huntId={hunt.id} />
 
-          <div className="bg-white/60 border border-paper-border rounded-2xl shadow-sm overflow-hidden mt-6">
-            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-passport-navy/5 text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest border-b border-paper-border">
-              <div className="col-span-2">Username</div>
-              <div className="col-span-2">Password</div>
-              <div className="col-span-3">Full Name</div>
-              <div className="col-span-2">Nickname</div>
-              <div className="col-span-2">House</div>
-              <div className="col-span-1 text-right pr-2">Actions</div>
-            </div>
-
-            <div className="divide-y divide-paper-border/50 flex flex-col">
-              {hunt.participants.map(p => (
-                <RecruitRow key={p.id} recruit={p} />
-              ))}
-              
-              {hunt.participants.length === 0 && (
-                <div className="p-12 flex flex-col items-center justify-center text-muted-sepia bg-white/40">
-                  <Users size={48} className="mb-4 opacity-30 text-seal-gold" />
-                  <p className="font-playfair font-bold text-lg text-passport-navy">No recruits enrolled yet.</p>
-                  <p className="text-sm font-sarabun mt-1">Use the buttons above to add or import recruits.</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <RecruitTable recruits={hunt.participants} />
         </div>
       ))}
       
