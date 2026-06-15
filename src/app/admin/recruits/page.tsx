@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
-import { Users, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import RecruitManager from '@/components/RecruitManager';
 import RecruitTable from '@/components/RecruitTable';
 
