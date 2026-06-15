@@ -265,7 +265,7 @@ export async function bulkImportRecruits(formData: FormData) {
       const text = buffer.toString('utf-8');
       rawData = JSON.parse(text);
     } else {
-      const workbook = read(buffer, { type: 'buffer', codepage: 65001 });
+      const workbook = read(buffer, { type: 'buffer', codepage: 65001, raw: true });
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
       rawData = utils.sheet_to_json(worksheet);
@@ -483,3 +483,34 @@ export async function updateRecruitNickname(formData: FormData) {
   revalidatePath('/leaderboard');
   return { success: true };
 }
+
+export async function rerollAllRooms() {
+  const session = await getSession();
+  if (!session || session.role !== 'chief') {
+    return { error: 'ไม่ได้รับอนุญาต (Unauthorized)' };
+  }
+
+  try {
+    const participants = await prisma.participant.findMany();
+    const now = new Date();
+
+    for (const p of participants) {
+      const newRoom = Math.random() < 0.4 ? '210' : '211';
+      await prisma.participant.update({
+        where: { id: p.id },
+        data: {
+          assignedRoom: newRoom,
+          roomAssignedAt: now
+        }
+      });
+    }
+
+    revalidatePath('/admin/recruits');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (err: any) {
+    return { error: `เกิดข้อผิดพลาดในการสุ่มห้องใหม่: ${err.message || String(err)}` };
+  }
+}
+
+

@@ -35,6 +35,29 @@ export default async function Dashboard() {
     redirect('/');
   }
 
+  // 6 AM Daily Reset/Assignment Logic
+  const now = new Date();
+  const threshold = new Date(now);
+  threshold.setHours(6, 0, 0, 0);
+  if (now < threshold) {
+    threshold.setDate(threshold.getDate() - 1);
+  }
+
+  let assignedRoom = participant.assignedRoom;
+  let roomAssignedAt = participant.roomAssignedAt;
+
+  if (!assignedRoom || !roomAssignedAt || new Date(roomAssignedAt) < threshold) {
+    assignedRoom = Math.random() < 0.4 ? '210' : '211';
+    roomAssignedAt = now;
+    await prisma.participant.update({
+      where: { id: participant.id },
+      data: {
+        assignedRoom,
+        roomAssignedAt
+      }
+    });
+  }
+
   // Generate QR Code data URL
   const qrData = JSON.stringify({
     participantId: participant.id,
@@ -120,6 +143,40 @@ export default async function Dashboard() {
             
             <div className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-sarabun font-bold shadow-sm ${houseConfig.bgClass} ${houseConfig.textClass}`}>
               บ้าน {houseConfig.name}
+            </div>
+          </div>
+        </div>
+
+        {/* Assigned Room Card */}
+        <div className="w-full bg-passport-ivory paper-texture rounded-2xl shadow-md border border-paper-border mb-6 p-5 relative overflow-hidden">
+          {/* Subtle gold badge border */}
+          <div className="absolute inset-[4px] border border-seal-gold/25 rounded-xl pointer-events-none"></div>
+          
+          <div className="flex items-center gap-3 mb-3 relative z-10">
+            <div className="bg-passport-navy/10 text-passport-navy p-2 rounded-lg border border-seal-gold/30">
+              <ShieldCheck className="text-seal-gold w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-playfair font-bold text-passport-navy text-sm">ZPD ASSIGNED ROOM</p>
+              <p className="text-[9px] font-mono text-muted-sepia uppercase tracking-widest">ห้องปฏิบัติการประจำวัน</p>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center relative z-10 pt-2 border-t border-paper-border/40">
+            <div>
+              <span className="text-[10px] font-sans font-bold text-muted-sepia uppercase tracking-wider block">Assigned Room</span>
+              <span className="text-3xl font-playfair font-bold text-passport-navy">ห้อง {assignedRoom}</span>
+            </div>
+            
+            <div className="text-right">
+              <span className="text-[9px] font-sans font-bold text-muted-sepia uppercase tracking-wider block">Randomized At</span>
+              <span className="text-xs font-mono font-bold text-sepia-ink">
+                {roomAssignedAt ? new Date(roomAssignedAt).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                }) + ' (' + new Date(roomAssignedAt).toLocaleDateString('en-GB') + ')' : 'N/A'}
+              </span>
             </div>
           </div>
         </div>

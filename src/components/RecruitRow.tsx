@@ -47,7 +47,7 @@ export default function RecruitRow({
         </div>
 
         {/* Name */}
-        <div className="col-span-3 font-sarabun font-bold text-sepia-ink text-sm truncate">
+        <div className="col-span-2 font-sarabun font-bold text-sepia-ink text-sm truncate">
           {recruit.name} {recruit.surname}
         </div>
 
@@ -62,6 +62,13 @@ export default function RecruitRow({
             <img src={houses[recruit.house]?.image || '/assets/IMG_0488.PNG'} alt={recruit.house} className="w-full h-full object-cover" />
           </div>
           <span className="text-xs font-sarabun font-medium text-sepia-ink md:hidden lg:inline truncate">{recruit.house}</span>
+        </div>
+
+        {/* Assigned Room */}
+        <div className="col-span-1 font-mono text-sm font-bold text-passport-navy flex items-center">
+          <span className={`px-2 py-0.5 rounded-md border text-xs ${recruit.assignedRoom === '210' ? 'bg-district-ice/10 text-district-ice border-district-ice/30' : recruit.assignedRoom === '211' ? 'bg-district-desert/10 text-district-desert border-district-desert/30' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+            {recruit.assignedRoom || 'Unassigned'}
+          </span>
         </div>
 
         {/* Actions */}

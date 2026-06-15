@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Upload, Plus, X, Info } from 'lucide-react';
-import { addRecruit, bulkImportRecruits } from '@/app/actions';
+import { Users, Upload, Plus, X, Info, Dices } from 'lucide-react';
+import { addRecruit, bulkImportRecruits, rerollAllRooms } from '@/app/actions';
 import { houses } from '@/lib/houses';
 import { read, utils } from 'xlsx';
 
@@ -11,6 +11,27 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isRerolling, setIsRerolling] = useState(false);
+
+  const handleRerollRooms = async () => {
+    if (!confirm('สุ่มห้องปฏิบัติการใหม่สำหรับ recruits ทั้งหมด? (Are you sure you want to reroll room assignments for all recruits?)')) {
+      return;
+    }
+    
+    setIsRerolling(true);
+    try {
+      const res = await rerollAllRooms();
+      if (res && 'error' in res && res.error) {
+        alert(res.error);
+      } else {
+        alert('สุ่มห้องปฏิบัติการใหม่สำเร็จ! (All rooms rerolled successfully!)');
+      }
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการสุ่มห้อง: ' + String(err));
+    } finally {
+      setIsRerolling(false);
+    }
+  };
   
   const [fileError, setFileError] = useState<string>('');
   const [isValidFile, setIsValidFile] = useState(false);
@@ -38,7 +59,7 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
         }
       } else {
         const buffer = await file.arrayBuffer();
-        const workbook = read(buffer, { type: 'buffer', codepage: 65001 });
+        const workbook = read(buffer, { type: 'buffer', codepage: 65001, raw: true });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         
@@ -93,6 +114,20 @@ export default function RecruitManager({ huntId }: { huntId: string }) {
           <Upload size={24} strokeWidth={3} />
         </div>
         <span className="font-playfair font-bold text-passport-navy group-hover:text-seal-gold">Bulk Import</span>
+      </button>
+
+      {/* Reroll Rooms Button */}
+      <button 
+        onClick={handleRerollRooms}
+        disabled={isRerolling}
+        className="flex-1 bg-white/40 p-6 rounded-2xl border-2 border-dashed border-paper-border flex flex-col justify-center items-center text-center hover:bg-white hover:border-seal-gold hover:text-seal-gold transition group shadow-sm hover:-translate-y-1 cursor-pointer disabled:opacity-50"
+      >
+        <div className="bg-passport-ivory paper-texture text-seal-gold p-3 rounded-full mb-3 shadow-sm border border-paper-border group-hover:scale-110 group-hover:bg-seal-gold group-hover:text-white transition-all">
+          <Dices size={24} strokeWidth={2} className={isRerolling ? "animate-spin" : ""} />
+        </div>
+        <span className="font-playfair font-bold text-passport-navy group-hover:text-seal-gold">
+          {isRerolling ? "Rerolling..." : "Reroll All Rooms"}
+        </span>
       </button>
 
       {/* Add Single Modal */}
