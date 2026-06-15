@@ -38,7 +38,7 @@ export default async function RecruitsPage() {
 
           <RecruitManager huntId={hunt.id} />
 
-          <RecruitTable recruits={hunt.participants} />
+          <RecruitTable recruits={JSON.parse(JSON.stringify(hunt.participants))} />
         </div>
       ))}
       
