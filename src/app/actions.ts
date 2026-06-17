@@ -108,8 +108,8 @@ export async function updateCheckpoint(formData: FormData) {
   const checkpointId = formData.get('checkpointId') as string;
   const name = formData.get('name') as string;
   const zootopiaIcon = (formData.get('icon') as string) || '📍';
-  const hint = formData.get('hint') as string || null;
   const type = (formData.get('type') as string) || 'badge';
+  const hint = type === 'daily_attendance' ? null : (formData.get('hint') as string || null);
 
   if (!checkpointId || !name) throw new Error('Checkpoint ID and Name are required');
 

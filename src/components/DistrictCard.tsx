@@ -8,6 +8,7 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditDistrictOpen, setIsEditDistrictOpen] = useState(false);
   const [editingOfficer, setEditingOfficer] = useState<any>(null);
+  const [editType, setEditType] = useState(cp.type || 'badge');
 
   const districtColors = [
     'border-l-district-ice', 'border-l-district-desert', 'border-l-district-jungle', 
@@ -33,7 +34,7 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
           <button onClick={() => setIsAddOpen(true)} title="Add Officer" className="text-seal-gold hover:bg-seal-gold/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
             <Plus size={16} strokeWidth={3} />
           </button>
-          <button onClick={() => setIsEditDistrictOpen(true)} title="Edit Badge" className="text-seal-gold hover:bg-seal-gold/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
+          <button onClick={() => { setEditType(cp.type || 'badge'); setIsEditDistrictOpen(true); }} title="Edit Badge" className="text-seal-gold hover:bg-seal-gold/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
             <Pen size={16} />
           </button>
           <form action={removeCheckpoint}>
@@ -160,7 +161,13 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Type (ประเภท)</label>
-                <select name="type" defaultValue={cp.type || 'badge'} className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required>
+                <select 
+                  name="type" 
+                  value={editType} 
+                  onChange={(e) => setEditType(e.target.value)}
+                  className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" 
+                  required
+                >
                   <option value="badge">Scavenger Hunt Badge (เหรียญตรา)</option>
                   <option value="daily_attendance">Daily Attendance (จุดเช็คอินรายวัน)</option>
                 </select>
@@ -169,10 +176,12 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Emoji Icon</label>
                 <input type="text" name="icon" defaultValue={cp.zootopiaIcon || ''} className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
               </div>
-              <div>
-                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Hint (คำใบ้)</label>
-                <textarea name="hint" rows={3} defaultValue={cp.hint || ''} placeholder="e.g. Look under the big polar bear rug..." className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition resize-none" />
-              </div>
+              {editType !== 'daily_attendance' && (
+                <div>
+                  <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Hint (คำใบ้)</label>
+                  <textarea name="hint" rows={3} defaultValue={cp.hint || ''} placeholder="e.g. Look under the big polar bear rug..." className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition resize-none" />
+                </div>
+              )}
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setIsEditDistrictOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
                 <button type="submit" className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm">Save Changes</button>
