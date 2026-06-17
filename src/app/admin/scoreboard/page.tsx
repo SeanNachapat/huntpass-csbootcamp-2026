@@ -15,7 +15,9 @@ export default async function ScoreboardPage() {
       checkpoints: true,
       participants: {
         include: { 
-          stamps: true 
+          stamps: {
+            include: { checkpoint: true }
+          } 
         }
       },
     }
@@ -32,10 +34,15 @@ export default async function ScoreboardPage() {
       </div>
 
       {hunts.map(hunt => {
-        const totalDistricts = hunt.checkpoints.length;
+        const totalBadges = hunt.checkpoints.filter(cp => cp.type === 'badge' || !cp.type).length;
         
-        // Sort participants by stamp count descending
-        const rankedParticipants = [...hunt.participants].sort((a, b) => b.stamps.length - a.stamps.length);
+        // Sort participants by badge count descending
+        const rankedParticipants = [...hunt.participants].sort((a, b) => {
+          const aBadges = a.stamps.filter(s => s.checkpoint.type === 'badge' || !s.checkpoint.type).length;
+          const bBadges = b.stamps.filter(s => s.checkpoint.type === 'badge' || !s.checkpoint.type).length;
+          if (bBadges !== aBadges) return bBadges - aBadges;
+          return b.stamps.length - a.stamps.length;
+        });
 
         return (
           <div key={hunt.id} className="bg-passport-ivory paper-texture rounded-2xl shadow-xl p-6 lg:p-8 border border-paper-border mb-8">
@@ -90,8 +97,11 @@ export default async function ScoreboardPage() {
                        
                        <div className="flex items-center gap-3 shrink-0">
                          <div className="text-right">
-                           <div className="font-mono text-xl font-bold text-passport-navy">
-                             {p.stamps.length} <span className="text-sm text-muted-sepia font-sans font-normal uppercase tracking-widest">Stamps</span>
+                           <div className="font-mono text-base font-bold text-passport-navy">
+                             {p.stamps.filter(s => s.checkpoint.type === 'badge' || !s.checkpoint.type).length} / {totalBadges} <span className="text-xs text-muted-sepia font-sans font-normal uppercase tracking-wider">Badges</span>
+                           </div>
+                           <div className="font-mono text-xs text-muted-sepia mt-0.5">
+                             {p.stamps.filter(s => s.checkpoint.type === 'daily_attendance').length} <span className="font-sans font-normal uppercase tracking-wider text-[10px]">Attendances</span>
                            </div>
                          </div>
                        </div>

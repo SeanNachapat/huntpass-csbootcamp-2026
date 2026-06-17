@@ -40,7 +40,8 @@ export default async function AdminDashboardOverview() {
       </div>
 
       {hunts.map(hunt => {
-        const totalDistricts = hunt.checkpoints.length;
+        const totalBadges = hunt.checkpoints.filter(cp => cp.type === 'badge' || !cp.type).length;
+        const totalAttendance = hunt.checkpoints.filter(cp => cp.type === 'daily_attendance').length;
         const totalRecruits = hunt.participants.length;
         const totalOfficers = hunt.checkpoints.reduce((acc, cp) => acc + cp.officers.length, 0);
         const totalStamps = hunt.participants.reduce((acc, p) => acc + p.stamps.length, 0);
@@ -63,10 +64,12 @@ export default async function AdminDashboardOverview() {
               <div className="bg-white/60 p-5 rounded-xl border-l-4 border-l-district-ice shadow-sm border border-paper-border hover:-translate-y-1 transition-transform">
                 <div className="flex items-center gap-3 mb-2">
                   <MapPin className="text-district-ice" size={20} />
-                  <p className="text-xs text-sepia-ink font-sans font-bold uppercase tracking-widest">Districts</p>
+                  <p className="text-xs text-sepia-ink font-sans font-bold uppercase tracking-widest">Badges / Attendance</p>
                 </div>
-                <p className="text-4xl font-playfair font-bold text-passport-navy">{totalDistricts}</p>
-                <Link href="/admin/districts" className="text-xs font-sans font-bold text-district-ice hover:underline mt-3 inline-block uppercase tracking-wider">Manage Districts →</Link>
+                <p className="text-2xl font-playfair font-bold text-passport-navy">
+                  {totalBadges} <span className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-wider">Badges</span> &middot; {totalAttendance} <span className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-wider">Days</span>
+                </p>
+                <Link href="/admin/districts" className="text-xs font-sans font-bold text-district-ice hover:underline mt-3 inline-block uppercase tracking-wider">Manage Badges →</Link>
               </div>
               
               <div className="bg-white/60 p-5 rounded-xl border-l-4 border-l-district-lavender shadow-sm border border-paper-border hover:-translate-y-1 transition-transform">
@@ -123,7 +126,10 @@ export default async function AdminDashboardOverview() {
                   
                   {/* Completion Rate Indicator */}
                   {(() => {
-                    const recruitsWithMaxStamps = hunt.participants.filter(p => p.stamps.length === totalDistricts).length;
+                    const recruitsWithMaxStamps = hunt.participants.filter(p => {
+                      const badgeStamps = p.stamps.filter(s => s.checkpoint.type === 'badge' || !s.checkpoint.type).length;
+                      return totalBadges > 0 && badgeStamps === totalBadges;
+                    }).length;
                     const completionRate = totalRecruits > 0 ? Math.round((recruitsWithMaxStamps / totalRecruits) * 100) : 0;
                     
                     return (

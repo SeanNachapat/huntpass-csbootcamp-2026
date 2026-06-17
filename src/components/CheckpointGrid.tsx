@@ -9,6 +9,7 @@ interface Checkpoint {
   name: string;
   zootopiaIcon: string | null;
   hint: string | null;
+  type?: string | null;
 }
 
 interface Stamp {
@@ -140,14 +141,18 @@ export default function CheckpointGrid({ checkpoints, stamps }: CheckpointGridPr
                     <h3 className="font-playfair font-bold text-[#2c1d11] text-2xl tracking-wide select-text">
                       {selectedCheckpoint.name}
                     </h3>
-                    <p className="font-mono text-[9px] text-[#8c765c] tracking-widest mt-1">ZPD DISTRICT FILE</p>
+                    <p className="font-mono text-[9px] text-[#8c765c] tracking-widest mt-1">
+                      {selectedCheckpoint.type === 'daily_attendance' ? 'ZPD ATTENDANCE RECORD' : 'ZPD CASE FILE'}
+                    </p>
                   </div>
 
                   {/* Hint Content */}
                   <div className="space-y-3 relative z-10 text-center px-2">
-                    <p className="font-playfair italic text-[#8c765c] text-xs font-bold uppercase tracking-wider">District Clue / คำใบ้</p>
+                    <p className="font-playfair italic text-[#8c765c] text-xs font-bold uppercase tracking-wider">
+                      {selectedCheckpoint.type === 'daily_attendance' ? 'Attendance Status / สถานะการเช็คอิน' : 'Badge Clue / คำใบ้'}
+                    </p>
                     <p className="font-sarabun font-medium text-sm leading-relaxed text-[#4e3c2b] whitespace-pre-wrap select-text">
-                      {selectedCheckpoint.hint || 'No clue has been provided for this district yet. Keep searching!'}
+                      {selectedCheckpoint.hint || (selectedCheckpoint.type === 'daily_attendance' ? 'รายงานตัวกับเจ้าหน้าที่เพื่อสแกนเช็คอินเข้างานประจำวัน (Scan QR code with officers to check-in daily)' : 'No clue has been provided for this badge yet. Keep searching!')}
                     </p>
                   </div>
                 </div>

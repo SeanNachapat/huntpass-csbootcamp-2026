@@ -27,7 +27,9 @@ export default async function Dashboard() {
           }
         }
       },
-      stamps: true
+      stamps: {
+        include: { checkpoint: true }
+      }
     }
   });
 
@@ -73,8 +75,17 @@ export default async function Dashboard() {
   });
 
   // Calculate Progress
-  const totalCheckpoints = participant.hunt.checkpoints.length;
-  const stampsCollected = participant.stamps.length;
+  const allCheckpoints = participant.hunt.checkpoints;
+  const badgeCheckpoints = allCheckpoints.filter(cp => cp.type === 'badge' || !cp.type);
+  const attendanceCheckpoints = allCheckpoints.filter(cp => cp.type === 'daily_attendance');
+
+  const totalBadges = badgeCheckpoints.length;
+  const badgeStamps = participant.stamps.filter(s => s.checkpoint.type === 'badge' || !s.checkpoint.type);
+  const badgesCollected = badgeStamps.length;
+
+  const totalAttendance = attendanceCheckpoints.length;
+  const attendanceStamps = participant.stamps.filter(s => s.checkpoint.type === 'daily_attendance');
+  const attendanceCollected = attendanceStamps.length;
 
   // Get House Config
   const houseConfig = houses[participant.house] || houses['ควาย (Bogo)']; // fallback to Bogo
@@ -165,7 +176,7 @@ export default async function Dashboard() {
           <div className="flex justify-between items-center relative z-10 pt-2 border-t border-paper-border/40">
             <div>
               <span className="text-[10px] font-sans font-bold text-muted-sepia uppercase tracking-wider block">Assigned Room</span>
-              <span className="text-3xl font-playfair font-bold text-passport-navy">ห้อง {assignedRoom}</span>
+              <span className="text-3xl font-playfair font-bold text-passport-navy">{assignedRoom}</span>
             </div>
             
             <div className="text-right">
@@ -192,43 +203,69 @@ export default async function Dashboard() {
           </p>
         </div>
 
-        {/* District Stamps */}
-        <div className="w-full bg-passport-ivory paper-texture rounded-2xl shadow-md border border-paper-border mb-8 p-6">
+        {/* Daily Attendance Stamps */}
+        <div className="w-full bg-passport-ivory paper-texture rounded-2xl shadow-md border border-paper-border mb-6 p-6">
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="h-px bg-paper-border flex-grow"></div>
-            <h2 className="font-mono text-xs font-bold text-sepia-ink tracking-widest">DISTRICT STAMPS</h2>
+            <h2 className="font-mono text-xs font-bold text-sepia-ink tracking-widest">DAILY ATTENDANCE</h2>
             <div className="h-px bg-paper-border flex-grow"></div>
           </div>
 
           <CheckpointGrid 
-            checkpoints={JSON.parse(JSON.stringify(participant.hunt.checkpoints))} 
-            stamps={JSON.parse(JSON.stringify(participant.stamps))} 
+            checkpoints={JSON.parse(JSON.stringify(attendanceCheckpoints))} 
+            stamps={JSON.parse(JSON.stringify(attendanceStamps))} 
           />
           
-          {totalCheckpoints === 0 && (
-            <p className="text-center font-sarabun text-muted-sepia py-4">ยังไม่มีฐานในระบบ</p>
+          {totalAttendance === 0 && (
+            <p className="text-center font-sarabun text-muted-sepia py-4 text-xs italic">ยังไม่มีจุดเช็คอินรายวัน</p>
           )}
 
-          <div className="mt-10 px-4">
-            <p className="font-mono text-xs font-bold text-sepia-ink text-center mb-3 tracking-widest">
-              {stampsCollected} / {totalCheckpoints} DISTRICTS VISITED
-            </p>
-            <div className="flex h-2 w-full gap-1">
-              {Array.from({ length: totalCheckpoints }).map((_, i) => {
-                const isFilled = i < stampsCollected;
-                const cp = participant.hunt.checkpoints[i];
-                const color = isFilled ? districtColors[i % districtColors.length] : 'transparent';
-                return (
-                  <div 
-                    key={i} 
-                    className={`flex-1 rounded-sm border ${isFilled ? 'border-transparent' : 'border-paper-border'}`}
-                    style={{ backgroundColor: color }}
-                  ></div>
-                );
-              })}
+          {totalAttendance > 0 && (
+            <div className="mt-4 px-4">
+              <p className="font-mono text-[9px] text-muted-sepia text-center mb-1 tracking-widest">
+                ATTENDANCE RECORD: {attendanceCollected} / {totalAttendance} DAYS PRESENT
+              </p>
             </div>
+          )}
+        </div>
+
+        {/* Badge Stamps */}
+        <div className="w-full bg-passport-ivory paper-texture rounded-2xl shadow-md border border-paper-border mb-8 p-6">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="h-px bg-paper-border flex-grow"></div>
+            <h2 className="font-mono text-xs font-bold text-sepia-ink tracking-widest">BADGES COLLECTED</h2>
+            <div className="h-px bg-paper-border flex-grow"></div>
           </div>
 
+          <CheckpointGrid 
+            checkpoints={JSON.parse(JSON.stringify(badgeCheckpoints))} 
+            stamps={JSON.parse(JSON.stringify(badgeStamps))} 
+          />
+          
+          {totalBadges === 0 && (
+            <p className="text-center font-sarabun text-muted-sepia py-4 text-xs italic">ยังไม่มีเหรียญรางวัลในระบบ</p>
+          )}
+
+          {totalBadges > 0 && (
+            <div className="mt-8 px-4">
+              <p className="font-mono text-xs font-bold text-sepia-ink text-center mb-3 tracking-widest">
+                {badgesCollected} / {totalBadges} BADGES EARNED
+              </p>
+              <div className="flex h-2 w-full gap-1">
+                {Array.from({ length: totalBadges }).map((_, i) => {
+                  const isFilled = i < badgesCollected;
+                  const color = isFilled ? districtColors[i % districtColors.length] : 'transparent';
+                  return (
+                    <div 
+                      key={i} 
+                      className={`flex-1 rounded-sm border ${isFilled ? 'border-transparent' : 'border-paper-border'}`}
+                      style={{ backgroundColor: color }}
+                    ></div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
       </main>

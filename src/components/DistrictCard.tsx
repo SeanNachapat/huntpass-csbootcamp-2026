@@ -22,18 +22,23 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
       <div className="flex justify-between items-start mb-6 pb-4 border-b border-paper-border">
         <div className="flex items-center gap-3">
           <span className="text-3xl bg-passport-ivory paper-texture w-14 h-14 flex items-center justify-center rounded-full shadow-sm border border-seal-gold/30">{cp.zootopiaIcon}</span>
-          <span className="font-playfair font-bold text-passport-navy text-xl leading-tight max-w-[150px]">{cp.name}</span>
+          <div className="flex flex-col">
+            <span className="font-playfair font-bold text-passport-navy text-xl leading-tight max-w-[150px]">{cp.name}</span>
+            <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-seal-gold mt-0.5">
+              {cp.type === 'daily_attendance' ? '📅 Attendance' : '🛡️ Badge'}
+            </span>
+          </div>
         </div>
         <div className="flex gap-2">
           <button onClick={() => setIsAddOpen(true)} title="Add Officer" className="text-seal-gold hover:bg-seal-gold/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
             <Plus size={16} strokeWidth={3} />
           </button>
-          <button onClick={() => setIsEditDistrictOpen(true)} title="Edit District" className="text-seal-gold hover:bg-seal-gold/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
+          <button onClick={() => setIsEditDistrictOpen(true)} title="Edit Badge" className="text-seal-gold hover:bg-seal-gold/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
             <Pen size={16} />
           </button>
           <form action={removeCheckpoint}>
             <input type="hidden" name="checkpointId" value={cp.id} />
-            <button type="submit" title="Remove District" className="text-ink-red hover:bg-ink-red/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
+            <button type="submit" title="Remove Badge" className="text-ink-red hover:bg-ink-red/10 rounded-lg transition-all p-2 bg-white border border-paper-border shadow-sm">
               <Trash2 size={16} />
             </button>
           </form>
@@ -143,15 +148,22 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
           <div className="bg-passport-ivory paper-texture rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-seal-gold/50 text-left">
             <div className="flex justify-between items-center p-5 border-b border-paper-border bg-white/40">
               <h3 className="font-playfair font-bold text-passport-navy text-xl flex items-center gap-2">
-                <Pen size={18} className="text-seal-gold" /> Edit District
+                <Pen size={18} className="text-seal-gold" /> Edit Badge/Checkpoint
               </h3>
               <button onClick={() => setIsEditDistrictOpen(false)} className="text-muted-sepia hover:text-sepia-ink bg-white rounded-full p-1.5 border border-paper-border shadow-sm"><X size={16}/></button>
             </div>
             <form action={async (fd) => { await updateCheckpoint(fd); setIsEditDistrictOpen(false); }} className="p-6 flex flex-col gap-4">
               <input type="hidden" name="checkpointId" value={cp.id} />
               <div>
-                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">District Name</label>
+                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Name</label>
                 <input type="text" name="name" defaultValue={cp.name} className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+              </div>
+              <div>
+                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Type (ประเภท)</label>
+                <select name="type" defaultValue={cp.type || 'badge'} className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required>
+                  <option value="badge">Scavenger Hunt Badge (เหรียญตรา)</option>
+                  <option value="daily_attendance">Daily Attendance (จุดเช็คอินรายวัน)</option>
+                </select>
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Emoji Icon</label>

@@ -10,7 +10,7 @@ export default function MobileAdminNav() {
   const links = [
     { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
     { href: '/admin/scoreboard', label: 'Scoreboard', icon: Activity },
-    { href: '/admin/districts', label: 'Districts', icon: MapPin },
+    { href: '/admin/districts', label: 'Badges', icon: MapPin },
     { href: '/admin/recruits', label: 'Recruits', icon: Users },
   ];
 

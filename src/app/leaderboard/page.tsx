@@ -10,7 +10,9 @@ export default async function LeaderboardPage() {
       checkpoints: true,
       participants: {
         include: {
-          stamps: true,
+          stamps: {
+            include: { checkpoint: true }
+          },
         }
       }
     }
@@ -27,13 +29,14 @@ export default async function LeaderboardPage() {
     );
   }
 
-  const totalClues = activeHunt.checkpoints.length;
+  const totalClues = activeHunt.checkpoints.filter(cp => cp.type === 'badge' || !cp.type).length;
 
   // Compute stats and sort
   const rankedParticipants = activeHunt.participants.map(p => {
-    const solved = p.stamps.length;
+    const badgeStamps = p.stamps.filter(s => s.checkpoint.type === 'badge' || !s.checkpoint.type);
+    const solved = badgeStamps.length;
     const lastStampTime = solved > 0 
-      ? Math.max(...p.stamps.map(s => s.stampedAt.getTime()))
+      ? Math.max(...badgeStamps.map(s => s.stampedAt.getTime()))
       : 0;
     return { ...p, solved, lastStampTime };
   }).sort((a, b) => {
