@@ -23,7 +23,10 @@ export default async function Dashboard() {
       hunt: {
         include: {
           checkpoints: {
-            orderBy: { order: 'asc' }
+            orderBy: [
+              { order: 'asc' },
+              { createdAt: 'asc' }
+            ]
           }
         }
       },

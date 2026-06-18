@@ -17,11 +17,19 @@ export default async function OfficerScanPage() {
     where: { sessionToken: session.token },
     include: { 
       checkpoints: { 
-        orderBy: { createdAt: 'asc' },
+        orderBy: [
+          { createdAt: 'asc' },
+          { order: 'asc' }
+        ],
         include: { 
           hunt: {
             include: {
-              checkpoints: { orderBy: { createdAt: 'asc' } }
+              checkpoints: {
+                orderBy: [
+                  { createdAt: 'asc' },
+                  { order: 'asc' }
+                ]
+              }
             }
           } 
         } 

@@ -16,6 +16,10 @@ export default async function OfficersPage() {
     where: { role: 'officer' },
     include: {
       checkpoints: {
+        orderBy: [
+          { createdAt: 'asc' },
+          { order: 'asc' }
+        ],
         include: {
           hunt: true
         }
@@ -29,7 +33,10 @@ export default async function OfficersPage() {
     include: {
       hunt: true
     },
-    orderBy: { name: 'asc' }
+    orderBy: [
+      { createdAt: 'asc' },
+      { order: 'asc' }
+    ]
   });
 
   return (
