@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Pen, Trash2, Plus, X, UserPlus, Key, ShieldCheck, Tag } from 'lucide-react';
+import { Pen, Trash2, Plus, X, UserPlus } from 'lucide-react';
 import { createOfficer, updateOfficer, deleteOfficer, linkExistingOfficer, removeOfficer } from '@/app/actions';
 
 interface Checkpoint {
@@ -36,7 +36,7 @@ export default function OfficersListUI({
 
   return (
     <div className="space-y-6">
-      {/* Top Controls */}
+      {/* Top Header Controls */}
       <div className="flex justify-between items-center pb-4 border-b border-paper-border">
         <h2 className="text-xl font-playfair font-bold text-passport-navy">Active Staff Roster</h2>
         <button 
@@ -47,145 +47,144 @@ export default function OfficersListUI({
         </button>
       </div>
 
-      {/* Officers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {initialOfficers.map((officer) => {
-          // Find checkpoints this officer is NOT assigned to yet
-          const unassignedCheckpoints = allCheckpoints.filter(
-            (cp) => !officer.checkpoints.some((assigned) => assigned.id === cp.id)
-          );
+      {/* Tabular Officers List */}
+      <div className="overflow-x-auto rounded-xl border border-paper-border bg-white/40 shadow-xs custom-scrollbar">
+        <table className="w-full text-left border-collapse font-sarabun min-w-[600px]">
+          <thead>
+            <tr className="bg-passport-navy/5 border-b border-paper-border text-[10px] font-sans font-bold uppercase tracking-widest text-muted-sepia">
+              <th className="py-4 px-5">Officer Details</th>
+              <th className="py-4 px-5">Assigned Scanners & Permissions</th>
+              <th className="py-4 px-5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-paper-border/60">
+            {initialOfficers.map((officer) => {
+              const unassignedCheckpoints = allCheckpoints.filter(
+                (cp) => !officer.checkpoints.some((assigned) => assigned.id === cp.id)
+              );
 
-          return (
-            <div key={officer.id} className="bg-white/80 p-5 rounded-xl border border-paper-border shadow-sm flex flex-col justify-between min-h-[320px] hover:shadow-md transition-shadow relative">
-              <div>
-                {/* Officer Header */}
-                <div className="flex justify-between items-start mb-4 pb-3 border-b border-paper-border">
-                  <div>
-                    <h3 className="font-playfair font-bold text-passport-navy text-lg leading-tight">{officer.displayName}</h3>
-                    <p className="text-[10px] font-mono font-bold text-seal-gold mt-1 tracking-wider uppercase">@{officer.username}</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <button 
-                      onClick={() => setEditingOfficer(officer)}
-                      className="p-1.5 text-muted-sepia hover:text-seal-gold hover:bg-seal-gold/10 rounded-md transition cursor-pointer"
-                      title="Edit Officer Details"
-                    >
-                      <Pen size={14} />
-                    </button>
-                    <button 
-                      onClick={() => setDeletingOfficer(officer)}
-                      className="p-1.5 text-muted-sepia hover:text-ink-red hover:bg-ink-red/10 rounded-md transition cursor-pointer"
-                      title="Delete Officer"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Assigned Access Scanners */}
-                <div className="space-y-2 mb-4">
-                  <p className="text-[10px] font-sans font-bold uppercase text-muted-sepia tracking-widest">Scanner Permissions</p>
+              return (
+                <tr key={officer.id} className="hover:bg-white/30 transition-colors">
+                  {/* Column 1: Officer Details */}
+                  <td className="py-4 px-5 align-middle">
+                    <div className="font-playfair font-bold text-passport-navy text-base leading-tight">
+                      {officer.displayName}
+                    </div>
+                    <div className="text-[10px] font-mono font-bold text-seal-gold tracking-wider mt-1 uppercase">
+                      @{officer.username}
+                    </div>
+                  </td>
                   
-                  {officer.checkpoints.length > 0 ? (
-                    <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                  {/* Column 2: Permissions Badge List & Grant Action */}
+                  <td className="py-4 px-5 align-middle">
+                    <div className="flex flex-wrap items-center gap-2">
                       {officer.checkpoints.map((cp) => (
                         <div 
                           key={cp.id} 
-                          className="bg-passport-ivory paper-texture px-3 py-2 rounded-lg border border-paper-border shadow-xs flex justify-between items-center group/item"
+                          className="bg-passport-ivory paper-texture pl-2 pr-1 py-1 rounded-lg border border-paper-border shadow-xs flex items-center gap-1.5 shrink-0 text-xs"
                         >
-                          <div className="flex items-center gap-2 text-left min-w-0">
-                            <span className="text-base shrink-0">{cp.zootopiaIcon || '📍'}</span>
-                            <div className="min-w-0">
-                              <p className="font-sarabun font-bold text-sepia-ink text-xs truncate leading-snug">{cp.name}</p>
-                              <p className="text-[8px] font-mono text-muted-sepia leading-none truncate uppercase">{cp.hunt.name}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <span className={`px-1.5 py-0.5 rounded-[4px] text-[7px] font-bold uppercase ${cp.type === 'daily_attendance' ? 'bg-amber-600/10 text-amber-600 border border-amber-600/20' : 'bg-green-600/10 text-green-600 border border-green-600/20'}`}>
-                              {cp.type === 'daily_attendance' ? '📅 Daily' : '🛡️ Badge'}
-                            </span>
-                            <form action={removeOfficer}>
-                              <input type="hidden" name="officerId" value={officer.id} />
-                              <input type="hidden" name="checkpointId" value={cp.id} />
-                              <button 
-                                type="submit" 
-                                className="text-muted-sepia hover:text-ink-red p-1 rounded-md hover:bg-ink-red/10 transition cursor-pointer" 
-                                title="Revoke Access"
-                              >
-                                <X size={12} strokeWidth={2.5} />
-                              </button>
-                            </form>
-                          </div>
+                          <span className="text-sm shrink-0">{cp.zootopiaIcon || '📍'}</span>
+                          <span className="font-bold text-sepia-ink max-w-[120px] truncate">{cp.name}</span>
+                          <span className={`px-1.5 py-0.5 rounded-[4px] text-[7px] font-bold uppercase ${cp.type === 'daily_attendance' ? 'bg-amber-600/10 text-amber-600 border border-amber-600/20' : 'bg-green-600/10 text-green-600 border border-green-600/20'}`}>
+                            {cp.type === 'daily_attendance' ? 'Daily' : 'Badge'}
+                          </span>
+                          <form action={removeOfficer} className="inline-flex shrink-0">
+                            <input type="hidden" name="officerId" value={officer.id} />
+                            <input type="hidden" name="checkpointId" value={cp.id} />
+                            <button 
+                              type="submit" 
+                              className="text-muted-sepia hover:text-ink-red p-0.5 rounded transition cursor-pointer" 
+                              title="Revoke Access"
+                            >
+                              <X size={10} strokeWidth={3} />
+                            </button>
+                          </form>
                         </div>
                       ))}
-                    </div>
-                  ) : (
-                    <div className="text-[11px] font-sarabun text-muted-sepia text-center py-4 border border-dashed border-paper-border rounded-lg bg-white/40 italic">
-                      No badges assigned
-                    </div>
-                  )}
-                </div>
-              </div>
+                      
+                      {officer.checkpoints.length === 0 && (
+                        <span className="text-xs text-muted-sepia italic mr-2">No scanners assigned.</span>
+                      )}
 
-              {/* Add Access Form/Selector */}
-              <div className="border-t border-paper-border pt-3 mt-3">
-                {assigningToOfficerId === officer.id ? (
-                  <form 
-                    action={async (fd) => {
-                      await linkExistingOfficer(fd);
-                      setAssigningToOfficerId(null);
-                    }} 
-                    className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200"
-                  >
-                    <input type="hidden" name="officerId" value={officer.id} />
-                    <div className="flex gap-1.5">
-                      <select 
-                        name="checkpointId" 
-                        className="flex-grow bg-white text-black border border-paper-border rounded-lg px-2 py-1.5 text-xs font-sarabun focus:ring-1 focus:ring-seal-gold outline-none"
-                        required
-                      >
-                        <option value="">-- Choose Checkpoint --</option>
-                        {unassignedCheckpoints.map(cp => (
-                          <option key={cp.id} value={cp.id}>
-                            {cp.zootopiaIcon || '📍'} {cp.name} ({cp.type === 'daily_attendance' ? 'Daily' : 'Badge'})
-                          </option>
-                        ))}
-                      </select>
+                      {/* Grant Permission Form / Inline Dropdown */}
+                      {assigningToOfficerId === officer.id ? (
+                        <form 
+                          action={async (fd) => {
+                            await linkExistingOfficer(fd);
+                            setAssigningToOfficerId(null);
+                          }} 
+                          className="inline-flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 duration-150"
+                        >
+                          <input type="hidden" name="officerId" value={officer.id} />
+                          <select 
+                            name="checkpointId" 
+                            className="bg-white text-black border border-paper-border rounded-lg px-2 py-1 text-xs font-sarabun focus:ring-1 focus:ring-seal-gold outline-none"
+                            required
+                          >
+                            <option value="">-- Choose Checkpoint --</option>
+                            {unassignedCheckpoints.map(cp => (
+                              <option key={cp.id} value={cp.id}>
+                                {cp.zootopiaIcon || '📍'} {cp.name} ({cp.type === 'daily_attendance' ? 'Daily' : 'Badge'})
+                              </option>
+                            ))}
+                          </select>
+                          <button 
+                            type="submit"
+                            className="px-2.5 py-1 bg-passport-navy text-white rounded-lg text-[10px] font-bold font-sans uppercase tracking-wider hover:bg-passport-navy/90 transition shadow-xs cursor-pointer animate-pulse"
+                          >
+                            Grant
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => setAssigningToOfficerId(null)}
+                            className="p-1 text-muted-sepia hover:text-sepia-ink bg-white rounded-lg border border-paper-border transition cursor-pointer"
+                          >
+                            <X size={12} />
+                          </button>
+                        </form>
+                      ) : (
+                        <button 
+                          onClick={() => setAssigningToOfficerId(officer.id)}
+                          disabled={unassignedCheckpoints.length === 0}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-dashed border-seal-gold/40 hover:border-seal-gold text-seal-gold bg-white hover:bg-seal-gold/5 text-[10px] font-bold font-sans uppercase tracking-wider transition disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                        >
+                          <Plus size={10} strokeWidth={2.5} /> Grant Access
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                  
+                  {/* Column 3: Edit / Delete Action Buttons */}
+                  <td className="py-4 px-5 text-right align-middle shrink-0">
+                    <div className="inline-flex gap-1">
                       <button 
-                        type="submit"
-                        className="px-3 py-1.5 bg-passport-navy text-white rounded-lg text-xs font-bold font-sans uppercase tracking-wider hover:bg-passport-navy/90 transition shadow-sm cursor-pointer"
+                        onClick={() => setEditingOfficer(officer)}
+                        className="p-1.5 text-muted-sepia hover:text-seal-gold hover:bg-seal-gold/10 rounded-lg transition cursor-pointer"
+                        title="Edit Officer details"
                       >
-                        Add
+                        <Pen size={14} />
                       </button>
                       <button 
-                        type="button" 
-                        onClick={() => setAssigningToOfficerId(null)}
-                        className="p-1.5 text-muted-sepia hover:text-sepia-ink bg-white rounded-lg border border-paper-border transition cursor-pointer"
+                        onClick={() => setDeletingOfficer(officer)}
+                        className="p-1.5 text-muted-sepia hover:text-ink-red hover:bg-ink-red/10 rounded-lg transition cursor-pointer"
+                        title="Delete Officer account"
                       >
-                        <X size={14} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
-                  </form>
-                ) : (
-                  <button 
-                    onClick={() => setAssigningToOfficerId(officer.id)}
-                    disabled={unassignedCheckpoints.length === 0}
-                    className="w-full flex items-center justify-center gap-1 py-2 rounded-lg border border-dashed border-seal-gold/40 hover:border-seal-gold text-seal-gold bg-white hover:bg-seal-gold/5 text-xs font-bold font-sans uppercase tracking-wider transition disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                  >
-                    <Plus size={14} strokeWidth={2.5} /> Assign Scanner Access
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {initialOfficers.length === 0 && (
-          <div className="col-span-full py-12 text-center border border-dashed border-paper-border rounded-2xl bg-white/40 italic font-sarabun text-muted-sepia">
-            No officer staff accounts registered yet.
-          </div>
-        )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
+
+      {initialOfficers.length === 0 && (
+        <div className="py-12 text-center border border-dashed border-paper-border rounded-xl bg-white/40 italic font-sarabun text-muted-sepia">
+          No officer staff accounts registered yet.
+        </div>
+      )}
 
       {/* Create Officer Modal */}
       {isCreateOpen && (
