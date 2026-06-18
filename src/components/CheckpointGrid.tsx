@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, HelpCircle } from 'lucide-react';
 import Portal from './Portal';
+import MarkdownText from '@/lib/markdown';
 
 interface Checkpoint {
   id: string;
@@ -151,9 +152,17 @@ export default function CheckpointGrid({ checkpoints, stamps }: CheckpointGridPr
                     <p className="font-playfair italic text-[#8c765c] text-xs font-bold uppercase tracking-wider">
                       {selectedCheckpoint.type === 'daily_attendance' ? 'Attendance Status / สถานะการเช็คอิน' : 'Badge Clue / คำใบ้'}
                     </p>
-                    <p className="font-sarabun font-medium text-sm leading-relaxed text-[#4e3c2b] whitespace-pre-wrap select-text">
-                      {selectedCheckpoint.hint || (selectedCheckpoint.type === 'daily_attendance' ? 'รายงานตัวกับเจ้าหน้าที่เพื่อสแกนเช็คอินเข้างานประจำวัน (Scan QR code with officers to check-in daily)' : 'No clue has been provided for this badge yet. Keep searching!')}
-                    </p>
+                    {selectedCheckpoint.hint ? (
+                      <div className="select-text">
+                        <MarkdownText text={selectedCheckpoint.hint} />
+                      </div>
+                    ) : (
+                      <p className="font-sarabun font-medium text-sm leading-relaxed text-[#4e3c2b] text-center select-text">
+                        {selectedCheckpoint.type === 'daily_attendance' 
+                          ? 'รายงานตัวกับเจ้าหน้าที่เพื่อสแกนเช็คอินเข้างานประจำวัน (Scan QR code with officers to check-in daily)' 
+                          : 'No clue has been provided for this badge yet. Keep searching!'}
+                      </p>
+                    )}
                   </div>
                 </div>
 

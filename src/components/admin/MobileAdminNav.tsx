@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Activity, MapPin, Users } from 'lucide-react';
+import { LayoutDashboard, Activity, MapPin, Users, ShieldCheck } from 'lucide-react';
 
 export default function MobileAdminNav() {
   const pathname = usePathname();
@@ -10,7 +10,8 @@ export default function MobileAdminNav() {
   const links = [
     { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
     { href: '/admin/scoreboard', label: 'Scoreboard', icon: Activity },
-    { href: '/admin/districts', label: 'Badges', icon: MapPin },
+    { href: '/admin/badges', label: 'Badges', icon: MapPin },
+    { href: '/admin/officers', label: 'Officers', icon: ShieldCheck },
     { href: '/admin/recruits', label: 'Recruits', icon: Users },
   ];
 

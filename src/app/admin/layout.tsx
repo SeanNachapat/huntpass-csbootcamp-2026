@@ -31,8 +31,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           
           <div className="text-xs font-sans font-bold text-seal-gold/50 mb-2 mt-6 px-2 uppercase tracking-widest">Management</div>
-          <Link href="/admin/districts" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 transition font-sarabun text-passport-ivory">
-            <MapPin size={20} className="text-seal-gold" /> Badges & Officers
+          <Link href="/admin/badges" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 transition font-sarabun text-passport-ivory">
+            <MapPin size={20} className="text-seal-gold" /> Badges & Checkpoints
+          </Link>
+          <Link href="/admin/officers" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 transition font-sarabun text-passport-ivory">
+            <ShieldCheck size={20} className="text-seal-gold" /> Officers Management
           </Link>
           <Link href="/admin/recruits" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 transition font-sarabun text-passport-ivory">
             <Users size={20} className="text-seal-gold" /> Recruits Records

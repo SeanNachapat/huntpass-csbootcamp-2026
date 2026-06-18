@@ -6,17 +6,15 @@ import { addCheckpoint } from '@/app/actions';
 
 export default function AddDistrictCard({ huntId }: { huntId: string }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [type, setType] = useState('badge');
 
   return (
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="bg-white/40 rounded-2xl border-2 border-dashed border-paper-border flex flex-col justify-center items-center text-center hover:bg-white hover:border-seal-gold hover:text-seal-gold transition min-h-[300px] text-muted-sepia group shadow-sm hover:-translate-y-1 cursor-pointer w-full"
+        className="flex items-center gap-2 px-4 py-2.5 bg-passport-navy text-white hover:bg-passport-navy/90 rounded-xl text-xs font-sans font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer border-b-2 border-black/20 shrink-0"
       >
-        <div className="bg-passport-ivory paper-texture p-4 rounded-full mb-4 shadow-sm border border-paper-border group-hover:scale-110 group-hover:border-seal-gold transition-all">
-          <Plus size={36} />
-        </div>
-        <span className="font-playfair font-bold text-lg text-passport-navy group-hover:text-seal-gold">Add New Badge</span>
+        <Plus size={16} /> Add Checkpoint
       </button>
 
       {isOpen && (
@@ -36,7 +34,13 @@ export default function AddDistrictCard({ huntId }: { huntId: string }) {
               </div>
               <div>
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Type (ประเภท)</label>
-                <select name="type" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required>
+                <select 
+                  name="type" 
+                  value={type} 
+                  onChange={(e) => setType(e.target.value)}
+                  className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" 
+                  required
+                >
                   <option value="badge">Scavenger Hunt Badge (เหรียญตรา)</option>
                   <option value="daily_attendance">Daily Attendance (จุดเช็คอินรายวัน)</option>
                 </select>
@@ -45,9 +49,22 @@ export default function AddDistrictCard({ huntId }: { huntId: string }) {
                 <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Emoji Icon</label>
                 <input type="text" name="icon" placeholder="e.g. 🏢" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" />
               </div>
+              
+              {type === 'badge' && (
+                <div>
+                  <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Hint (คำใบ้ - Supports Markdown)</label>
+                  <textarea 
+                    name="hint" 
+                    rows={3} 
+                    placeholder="e.g. Find the **secret stash** near the [entrance](https://zpd.gov)..." 
+                    className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition resize-none" 
+                  />
+                </div>
+              )}
+
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setIsOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm">Add Badge</button>
+                <button type="submit" className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm">Add Checkpoint</button>
               </div>
             </form>
           </div>

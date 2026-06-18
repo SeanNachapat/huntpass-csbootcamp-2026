@@ -48,14 +48,13 @@ model Participant {
 }
 
 model Staff {
-  id            String      @id @default(uuid())
-  checkpointId  String?
+  id            String       @id @default(uuid())
   displayName   String
-  username      String      @unique
+  username      String       @unique
   password      String
-  sessionToken  String      @unique
-  role          String      @default("officer") // officer | chief
-  checkpoint    Checkpoint? @relation(fields: [checkpointId], references: [id], onDelete: SetNull)
+  sessionToken  String       @unique
+  role          String       @default("officer") // officer | chief
+  checkpoints   Checkpoint[]
   stampsGiven   Stamp[]
 }
 

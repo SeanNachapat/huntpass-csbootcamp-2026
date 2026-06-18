@@ -16,7 +16,7 @@ export default async function OfficerScanPage() {
   const officer = await prisma.staff.findUnique({
     where: { sessionToken: session.token },
     include: { 
-      checkpoint: { 
+      checkpoints: { 
         include: { 
           hunt: {
             include: {
@@ -28,14 +28,16 @@ export default async function OfficerScanPage() {
     }
   });
 
-  if (!officer || !officer.checkpoint) {
+  if (!officer || officer.checkpoints.length === 0) {
     redirect('/officer');
   }
 
+  const checkpointIds = officer.checkpoints.map(cp => cp.id);
+
   const recentStamps = await prisma.stamp.findMany({
-    where: { checkpointId: officer.checkpointId || '' },
+    where: { checkpointId: { in: checkpointIds } },
     orderBy: { stampedAt: 'desc' },
-    take: 5,
+    take: 10,
     include: {
       participant: true
     }
@@ -43,6 +45,7 @@ export default async function OfficerScanPage() {
 
   const initialRecentScans = recentStamps.map(s => ({
     id: s.id,
+    checkpointId: s.checkpointId,
     participantName: `${s.participant.name} ${s.participant.surname}`,
     nickname: s.participant.nickname,
     house: s.participant.house,
@@ -66,24 +69,13 @@ export default async function OfficerScanPage() {
           </form>
         </div>
       </header>
-
+ 
       <main className="flex-grow flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-[430px] mx-auto flex flex-col h-full">
-          {(() => {
-            const checkpoints = officer.checkpoint.hunt.checkpoints;
-            const cpIndex = checkpoints.findIndex((cp: any) => cp.id === officer.checkpointId);
-            const districtColors = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#F39C12', '#16A085', '#C9A84C', '#C0392B'];
-            const checkpointColor = districtColors[Math.max(0, cpIndex) % districtColors.length];
-            
-            return (
-              <ScannerUI 
-                checkpointName={officer.checkpoint.name} 
-                checkpointIcon={officer.checkpoint.zootopiaIcon ?? undefined}
-                checkpointColor={checkpointColor}
-                initialRecentScans={initialRecentScans}
-              />
-            );
-          })()}
+          <ScannerUI 
+            checkpoints={JSON.parse(JSON.stringify(officer.checkpoints))}
+            initialRecentScans={initialRecentScans}
+          />
         </div>
       </main>
     </div>

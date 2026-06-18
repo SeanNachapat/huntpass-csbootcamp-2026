@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { Trash2, Plus, Pen, X } from 'lucide-react';
-import { assignOfficer, updateOfficer, removeOfficer, removeCheckpoint, updateCheckpoint } from '@/app/actions';
+import { assignOfficer, updateOfficer, removeOfficer, removeCheckpoint, updateCheckpoint, linkExistingOfficer } from '@/app/actions';
 
-export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: number }) {
+export default function DistrictCard({ cp, index = 0, allOfficers = [] }: { cp: any, index?: number, allOfficers?: any[] }) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditDistrictOpen, setIsEditDistrictOpen] = useState(false);
   const [editingOfficer, setEditingOfficer] = useState<any>(null);
+  const [addMode, setAddMode] = useState<'create' | 'existing'>('create');
   const [editType, setEditType] = useState(cp.type || 'badge');
 
   const districtColors = [
@@ -62,6 +63,7 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
                   </button>
                   <form action={removeOfficer}>
                     <input type="hidden" name="officerId" value={officer.id} />
+                    <input type="hidden" name="checkpointId" value={cp.id} />
                     <button type="submit" className="p-1.5 text-muted-sepia hover:text-ink-red hover:bg-ink-red/10 rounded-md transition">
                       <Trash2 size={14} />
                     </button>
@@ -78,37 +80,86 @@ export default function DistrictCard({ cp, index = 0 }: { cp: any, index?: numbe
       </div>
 
       {/* Add Modal */}
-      {isAddOpen && (
-        <div className="fixed inset-0 bg-passport-navy/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-passport-ivory paper-texture rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-seal-gold/50">
-            <div className="flex justify-between items-center p-5 border-b border-paper-border bg-white/40">
-              <h3 className="font-playfair font-bold text-passport-navy text-xl flex items-center gap-2">
-                <Plus size={20} className="text-seal-gold" /> Add Officer
-              </h3>
-              <button onClick={() => setIsAddOpen(false)} className="text-muted-sepia hover:text-sepia-ink bg-white rounded-full p-1.5 border border-paper-border shadow-sm"><X size={16}/></button>
+      {isAddOpen && (() => {
+        const assignableOfficers = allOfficers.filter(
+          (officer) => !cp.officers.some((assigned: any) => assigned.id === officer.id)
+        );
+        
+        return (
+          <div className="fixed inset-0 bg-passport-navy/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-passport-ivory paper-texture rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-seal-gold/50">
+              <div className="flex justify-between items-center p-5 border-b border-paper-border bg-white/40">
+                <h3 className="font-playfair font-bold text-passport-navy text-xl flex items-center gap-2">
+                  <Plus size={20} className="text-seal-gold" /> Add Officer
+                </h3>
+                <button onClick={() => setIsAddOpen(false)} className="text-muted-sepia hover:text-sepia-ink bg-white rounded-full p-1.5 border border-paper-border shadow-sm"><X size={16}/></button>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="flex border-b border-paper-border">
+                <button 
+                  type="button" 
+                  onClick={() => setAddMode('create')} 
+                  className={`flex-1 py-3 text-xs font-sans font-bold uppercase tracking-wider text-center border-b-2 transition-all ${addMode === 'create' ? 'border-seal-gold text-passport-navy bg-seal-gold/5' : 'border-transparent text-muted-sepia'}`}
+                >
+                  Create New
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setAddMode('existing')} 
+                  className={`flex-1 py-3 text-xs font-sans font-bold uppercase tracking-wider text-center border-b-2 transition-all ${addMode === 'existing' ? 'border-seal-gold text-passport-navy bg-seal-gold/5' : 'border-transparent text-muted-sepia'}`}
+                >
+                  Assign Existing
+                </button>
+              </div>
+
+              {addMode === 'create' ? (
+                <form action={async (fd) => { await assignOfficer(fd); setIsAddOpen(false); }} className="p-6 flex flex-col gap-4">
+                  <input type="hidden" name="checkpointId" value={cp.id} />
+                  <div>
+                    <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Display Name</label>
+                    <input type="text" name="displayName" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Username</label>
+                    <input type="text" name="username" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Password</label>
+                    <input type="password" name="password" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
+                  </div>
+                  <div className="flex gap-3 mt-4">
+                    <button type="button" onClick={() => setIsAddOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
+                    <button type="submit" className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm">Assign</button>
+                  </div>
+                </form>
+              ) : (
+                <form action={async (fd) => { await linkExistingOfficer(fd); setIsAddOpen(false); }} className="p-6 flex flex-col gap-4">
+                  <input type="hidden" name="checkpointId" value={cp.id} />
+                  <div>
+                    <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Select Officer</label>
+                    <select name="officerId" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2.5 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required>
+                      <option value="">-- Choose Officer --</option>
+                      {assignableOfficers.map(officer => (
+                        <option key={officer.id} value={officer.id}>{officer.displayName} (@{officer.username})</option>
+                      ))}
+                    </select>
+                  </div>
+                  {assignableOfficers.length === 0 && (
+                    <p className="text-xs font-sarabun text-ink-red italic text-center py-2 bg-red-50 rounded-lg border border-red-200">
+                      All existing officers are already assigned to this checkpoint.
+                    </p>
+                  )}
+                  <div className="flex gap-3 mt-4">
+                    <button type="button" onClick={() => setIsAddOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
+                    <button type="submit" disabled={assignableOfficers.length === 0} className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm disabled:opacity-40 disabled:pointer-events-none">Assign</button>
+                  </div>
+                </form>
+              )}
             </div>
-            <form action={async (fd) => { await assignOfficer(fd); setIsAddOpen(false); }} className="p-6 flex flex-col gap-4">
-              <input type="hidden" name="checkpointId" value={cp.id} />
-              <div>
-                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Display Name</label>
-                <input type="text" name="displayName" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
-              </div>
-              <div>
-                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Username</label>
-                <input type="text" name="username" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
-              </div>
-              <div>
-                <label className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-widest mb-1.5 block">Password</label>
-                <input type="password" name="password" className="w-full bg-white text-black border border-paper-border rounded-lg px-3 py-2 text-sm font-sarabun focus:ring-2 focus:ring-seal-gold outline-none transition" required />
-              </div>
-              <div className="flex gap-3 mt-4">
-                <button type="button" onClick={() => setIsAddOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-paper-border text-sepia-ink rounded-lg text-sm font-sarabun font-bold hover:bg-slate-50 transition shadow-sm">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2.5 bg-passport-navy text-white rounded-lg text-sm font-sarabun font-bold hover:bg-passport-navy/90 transition shadow-sm">Assign</button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Edit Modal */}
       {editingOfficer && (

@@ -9,20 +9,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized officer' }, { status: 401 });
     }
 
-    const { participantId, huntId } = await request.json();
+    const { participantId, huntId, checkpointId } = await request.json();
 
-    if (!participantId || !huntId) {
+    if (!participantId || !huntId || !checkpointId) {
       return NextResponse.json({ error: 'Invalid QR code data' }, { status: 400 });
     }
 
-    // Fetch officer to get checkpoint
+    // Fetch officer to get checkpoints
     const officer = await prisma.staff.findUnique({
       where: { sessionToken: session.token },
-      include: { checkpoint: true }
+      include: { checkpoints: true }
     });
 
-    if (!officer || !officer.checkpointId) {
+    if (!officer || officer.checkpoints.length === 0) {
       return NextResponse.json({ error: 'Invalid officer or missing assignment' }, { status: 401 });
+    }
+
+    const checkpoint = officer.checkpoints.find(cp => cp.id === checkpointId);
+    if (!checkpoint) {
+      return NextResponse.json({ error: 'Officer is not assigned to this scanner' }, { status: 403 });
     }
 
     // Verify participant
@@ -34,7 +39,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Participant not found' }, { status: 404 });
     }
 
-    if (participant.huntId !== officer.checkpoint?.huntId) {
+    if (participant.huntId !== checkpoint.huntId) {
       return NextResponse.json({ error: 'Participant is registered for a different hunt' }, { status: 400 });
     }
 
@@ -43,7 +48,7 @@ export async function POST(request: Request) {
       where: {
         participantId_checkpointId: {
           participantId: participant.id,
-          checkpointId: officer.checkpointId,
+          checkpointId: checkpointId,
         }
       }
     });
@@ -60,7 +65,7 @@ export async function POST(request: Request) {
     const stamp = await prisma.stamp.create({
       data: {
         participantId: participant.id,
-        checkpointId: officer.checkpointId,
+        checkpointId: checkpointId,
         officerId: officer.id,
       }
     });

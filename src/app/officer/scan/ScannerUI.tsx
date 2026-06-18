@@ -14,26 +14,37 @@ interface CameraDevice {
 
 interface RecentScan {
   id: string;
+  checkpointId: string;
   participantName: string;
   nickname: string;
   house: string;
   stampedAt: string;
 }
 
+interface Checkpoint {
+  id: string;
+  name: string;
+  zootopiaIcon: string | null;
+  type: string;
+  hunt: {
+    id: string;
+    name: string;
+    checkpoints: Array<{ id: string }>;
+  };
+}
+
 export default function ScannerUI({ 
-  checkpointName, 
-  checkpointIcon = '📍', 
-  checkpointColor = '#C9A84C',
+  checkpoints = [], 
   initialRecentScans = []
 }: { 
-  checkpointName?: string, 
-  checkpointIcon?: string, 
-  checkpointColor?: string,
+  checkpoints?: Checkpoint[], 
   initialRecentScans?: RecentScan[]
 }) {
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const isProcessingRef = useRef<boolean>(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
   
+  const [activeIdx, setActiveIdx] = useState(0);
   const [status, setStatus] = useState<ScanStatus>('scanning');
   const [message, setMessage] = useState<string>('');
   const [participantName, setParticipantName] = useState<string>('');
@@ -47,6 +58,19 @@ export default function ScannerUI({
   const [hasTorch, setHasTorch] = useState<boolean>(false);
   const [isTorchOn, setIsTorchOn] = useState<boolean>(false);
   const [recentScans, setRecentScans] = useState<RecentScan[]>(initialRecentScans);
+
+  const activeCheckpoint = checkpoints[activeIdx] || checkpoints[0];
+
+  const districtColors = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#F39C12', '#16A085', '#C9A84C', '#C0392B'];
+  const getCheckpointColor = (cp: any) => {
+    if (!cp || !cp.hunt || !cp.hunt.checkpoints) return '#C9A84C';
+    const index = cp.hunt.checkpoints.findIndex((c: any) => c.id === cp.id);
+    return districtColors[Math.max(0, index) % districtColors.length];
+  };
+
+  const checkpointColor = getCheckpointColor(activeCheckpoint);
+  const checkpointName = activeCheckpoint?.name || 'Scanner';
+  const checkpointIcon = activeCheckpoint?.zootopiaIcon || '📍';
 
   const startScanner = async (cameraId: string) => {
     if (!html5QrCodeRef.current) return;
@@ -167,7 +191,7 @@ export default function ScannerUI({
   }, []);
 
   const onScanSuccess = async (decodedText: string) => {
-    if (isProcessingRef.current) return;
+    if (isProcessingRef.current || !activeCheckpoint) return;
     isProcessingRef.current = true;
 
     // Stop camera feed to save resources/battery during stamp confirmation card view
@@ -184,7 +208,11 @@ export default function ScannerUI({
       const res = await fetch('/api/stamp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          participantId: data.participantId,
+          huntId: data.huntId,
+          checkpointId: activeCheckpoint.id
+        }),
       });
       const result = await res.json();
       if (res.ok) {
@@ -195,12 +223,13 @@ export default function ScannerUI({
 
         const newScan: RecentScan = {
           id: result.stampId || Math.random().toString(),
+          checkpointId: activeCheckpoint.id,
           participantName: result.participantName,
           nickname: result.nickname || '',
           house: result.speciesAvatar || 'ควาย (Bogo)',
           stampedAt: result.stampedAt || new Date().toISOString()
         };
-        setRecentScans(prev => [newScan, ...prev.slice(0, 4)]);
+        setRecentScans(prev => [newScan, ...prev.slice(0, 9)]);
       } else if (result.error === 'Already stamped') {
         setStatus('already_stamped');
         setParticipantName(result.participantName);
@@ -230,11 +259,121 @@ export default function ScannerUI({
     }
   };
 
+  // Google Wallet Carousel scroll/swipe handler
+  const handleCarouselScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+    const clientWidth = e.currentTarget.clientWidth;
+    const cardElements = e.currentTarget.children;
+    if (cardElements.length <= 1) return;
+
+    let closestIndex = 0;
+    let minDistance = Infinity;
+    const containerCenter = scrollLeft + clientWidth / 2;
+
+    for (let i = 0; i < cardElements.length; i++) {
+      const child = cardElements[i] as HTMLElement;
+      const childCenter = child.offsetLeft + child.clientWidth / 2;
+      const distance = Math.abs(containerCenter - childCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = i;
+      }
+    }
+
+    if (closestIndex !== activeIdx) {
+      setActiveIdx(closestIndex);
+    }
+  };
+
+  // Click card to center it
+  const selectCard = (idx: number) => {
+    setActiveIdx(idx);
+    const container = carouselRef.current;
+    if (container) {
+      const card = container.children[idx] as HTMLElement;
+      if (card) {
+        const targetScroll = card.offsetLeft - (container.clientWidth - card.clientWidth) / 2;
+        container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+      }
+    }
+  };
+
+  const activeRecentScans = recentScans.filter(scan => scan.checkpointId === activeCheckpoint?.id);
   const houseConfig = houses[house] || houses['ควาย (Bogo)'];
 
   return (
     <div className="flex flex-col h-full w-full relative">
       
+      {/* Google Wallet Style Carousel */}
+      {status === 'scanning' && checkpoints.length > 0 && (
+        <div className="w-full relative mb-4">
+          <div 
+            ref={carouselRef}
+            onScroll={handleCarouselScroll}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-12 py-3 w-full scrollbar-none scroll-smooth items-center min-h-[140px]"
+          >
+            {checkpoints.map((cp, idx) => {
+              const color = getCheckpointColor(cp);
+              const isActive = idx === activeIdx;
+              return (
+                <div 
+                  key={cp.id}
+                  onClick={() => selectCard(idx)}
+                  className={`
+                    snap-center shrink-0 w-[240px] sm:w-[270px] aspect-[1.586/1] rounded-2xl p-4 border flex flex-col justify-between relative shadow-lg transition-all duration-300 cursor-pointer select-none
+                    ${isActive 
+                      ? 'scale-105 bg-passport-navy text-white shadow-2xl border-[3px]' 
+                      : 'scale-95 border-paper-border bg-passport-ivory paper-texture text-sepia-ink opacity-40'}
+                  `}
+                  style={isActive ? { borderColor: color } : {}}
+                >
+                  <div className="absolute inset-0 paper-texture opacity-[0.03] mix-blend-overlay pointer-events-none rounded-2xl"></div>
+                  
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-2xl bg-white/10 w-9 h-9 flex items-center justify-center rounded-lg">{cp.zootopiaIcon || '📍'}</span>
+                      <div className="text-left">
+                        <p className={`font-playfair font-bold text-xs leading-tight truncate max-w-[120px] ${isActive ? 'text-passport-ivory' : 'text-passport-navy'}`}>{cp.name}</p>
+                        <p className="font-mono text-[7px] tracking-widest text-seal-gold/80 uppercase mt-0.5">ZPD Scanner Badge</p>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[7px] font-sans font-bold uppercase tracking-wider ${cp.type === 'daily_attendance' ? 'bg-amber-600/20 text-amber-500 border border-amber-500/30' : 'bg-green-600/20 text-green-500 border border-green-500/30'}`}>
+                      {cp.type === 'daily_attendance' ? '📅 Attendance' : '🛡️ Badge'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-white/10 pt-2.5">
+                    <div className="text-left">
+                      <p className="text-[6px] font-sans font-bold text-muted-sepia uppercase tracking-widest leading-none mb-1">Assigned Hunt</p>
+                      <p className="text-[9px] font-sarabun font-bold text-seal-gold leading-none truncate max-w-[130px]">{cp.hunt.name}</p>
+                    </div>
+                    
+                    {isActive && (
+                      <div className="flex items-center gap-1 bg-seal-gold text-passport-navy px-2 py-0.5 rounded-full text-[8px] font-bold animate-pulse">
+                        <div className="w-1 h-1 rounded-full bg-passport-navy"></div> active
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Indicator dots */}
+          {checkpoints.length > 1 && (
+            <div className="flex justify-center gap-1 mt-1.5">
+              {checkpoints.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => selectCard(idx)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === activeIdx ? 'bg-seal-gold w-3.5' : 'bg-white/20'}`}
+                ></button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Camera Viewport */}
       <div className={`w-full aspect-square relative rounded-2xl overflow-hidden bg-black ${status !== 'scanning' ? 'hidden' : ''}`}>
         
@@ -292,7 +431,7 @@ export default function ScannerUI({
 
       {/* Control Bar UNDER the scanner frame */}
       {status === 'scanning' && (
-        <div className="flex justify-center items-center gap-6 mt-6 px-4">
+        <div className="flex justify-center items-center gap-6 mt-4 px-4">
           {/* Close / Open Camera Toggle */}
           <button
             type="button"
@@ -301,17 +440,17 @@ export default function ScannerUI({
                 startScanner(cameras[currentCameraIndex].id);
               }
             }}
-            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl min-w-[75px] transition active:scale-95 border cursor-pointer bg-[#fffbf2] shadow-sm ${isScannerActive ? 'border-ink-red/30 text-ink-red hover:bg-ink-red/5' : 'border-seal-gold/30 text-seal-gold hover:bg-seal-gold/5'}`}
+            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl min-w-[70px] transition active:scale-95 border cursor-pointer bg-passport-ivory paper-texture shadow-sm ${isScannerActive ? 'border-ink-red/30 text-ink-red hover:bg-ink-red/5' : 'border-seal-gold/30 text-seal-gold hover:bg-seal-gold/5'}`}
           >
             {isScannerActive ? (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
-                <span className="text-[10px] font-sans font-bold uppercase tracking-wider">Close</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider">Close</span>
               </>
             ) : (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span className="text-[10px] font-sans font-bold uppercase tracking-wider">Open</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider">Open</span>
               </>
             )}
           </button>
@@ -321,11 +460,11 @@ export default function ScannerUI({
             type="button"
             onClick={flipCamera}
             disabled={cameras.length <= 1 || !isScannerActive}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl min-w-[80px] bg-passport-navy text-seal-gold border border-seal-gold/30 transition active:scale-95 cursor-pointer shadow-md disabled:opacity-40 disabled:pointer-events-none hover:bg-passport-navy/90"
+            className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl min-w-[75px] bg-passport-navy text-seal-gold border border-seal-gold/30 transition active:scale-95 cursor-pointer shadow-md disabled:opacity-40 disabled:pointer-events-none hover:bg-passport-navy/90"
             title="Flip Camera"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-            <span className="text-[10px] font-sans font-bold uppercase tracking-wider">Flip</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            <span className="text-[9px] font-sans font-bold uppercase tracking-wider">Flip</span>
           </button>
 
           {/* Flashlight/Torch Toggle */}
@@ -333,38 +472,42 @@ export default function ScannerUI({
             type="button"
             onClick={toggleTorch}
             disabled={!hasTorch || !isScannerActive}
-            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl min-w-[75px] transition active:scale-95 border cursor-pointer bg-[#fffbf2] shadow-sm ${!hasTorch || !isScannerActive ? 'opacity-40 pointer-events-none border-gray-200 text-gray-400' : isTorchOn ? 'border-seal-gold text-seal-gold bg-seal-gold/5 shadow-inner' : 'border-[#8c765c]/30 text-sepia-ink hover:bg-[#8c765c]/5'}`}
+            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl min-w-[70px] transition active:scale-95 border cursor-pointer bg-passport-ivory paper-texture shadow-sm ${!hasTorch || !isScannerActive ? 'opacity-40 pointer-events-none border-gray-200 text-gray-400' : isTorchOn ? 'border-seal-gold text-seal-gold bg-seal-gold/5 shadow-inner' : 'border-[#8c765c]/30 text-sepia-ink hover:bg-[#8c765c]/5'}`}
             title={hasTorch ? "Toggle Flashlight" : "Flashlight Unsupported"}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
-            <span className="text-[10px] font-sans font-bold uppercase tracking-wider">{isTorchOn ? 'On' : 'Off'}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            <span className="text-[9px] font-sans font-bold uppercase tracking-wider">{isTorchOn ? 'On' : 'Off'}</span>
           </button>
         </div>
       )}
 
       {status === 'scanning' && (
         <div className="flex flex-col w-full">
-          <div className="text-center mt-8">
-            <p className="font-mono uppercase text-seal-gold/70 tracking-widest text-xs mb-6">SCAN RECRUIT BADGE</p>
+          <div className="text-center mt-6">
+            <p className="font-mono uppercase text-seal-gold/70 tracking-widest text-xs mb-4">
+              SCAN RECRUIT FOR {checkpointName.toUpperCase()}
+            </p>
             
-            <div className="bg-passport-ivory paper-texture p-6 rounded-2xl shadow-lg border border-paper-border opacity-90 mx-4">
-              <p className="font-sarabun text-muted-sepia text-center italic text-sm">
+            <div className="bg-passport-ivory paper-texture p-4 rounded-xl shadow-lg border border-paper-border opacity-90 mx-4">
+              <p className="font-sarabun text-muted-sepia text-center italic text-xs">
                 {!isScannerActive ? 'Camera is offline. Start camera to begin.' : 'Waiting for QR Code...'}
               </p>
             </div>
           </div>
 
-          {/* Log of recently scanned recruits */}
-          <div className="mt-8 px-4 w-full">
-            <div className="flex items-center gap-3 mb-4">
+          {/* Log of recently scanned recruits at this active checkpoint */}
+          <div className="mt-6 px-4 w-full">
+            <div className="flex items-center gap-3 mb-3">
               <span className="h-px bg-paper-border/40 flex-grow"></span>
-              <span className="font-mono text-xs font-bold text-seal-gold/70 tracking-widest uppercase">RECENTLY SCANNED</span>
+              <span className="font-mono text-[10px] font-bold text-seal-gold/70 tracking-widest uppercase">
+                SCANS AT {checkpointName.toUpperCase()}
+              </span>
               <span className="h-px bg-paper-border/40 flex-grow"></span>
             </div>
 
-            {recentScans.length > 0 ? (
-              <div className="space-y-3">
-                {recentScans.map(scan => {
+            {activeRecentScans.length > 0 ? (
+              <div className="space-y-2.5">
+                {activeRecentScans.map(scan => {
                   const config = houses[scan.house] || houses['ควาย (Bogo)'];
                   return (
                     <div key={scan.id} className="bg-passport-ivory paper-texture p-3 rounded-xl border border-paper-border flex items-center justify-between shadow-sm animate-in fade-in duration-200">

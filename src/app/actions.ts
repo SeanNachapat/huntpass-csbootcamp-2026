@@ -66,20 +66,58 @@ export async function assignOfficer(formData: FormData) {
     throw new Error('All fields are required');
   }
 
-  const sessionToken = crypto.randomBytes(16).toString('hex');
+  const existingStaff = await prisma.staff.findUnique({
+    where: { username }
+  });
 
-  await prisma.staff.create({
+  if (existingStaff) {
+    await prisma.staff.update({
+      where: { id: existingStaff.id },
+      data: {
+        checkpoints: {
+          connect: { id: checkpointId }
+        }
+      }
+    });
+  } else {
+    const sessionToken = crypto.randomBytes(16).toString('hex');
+    await prisma.staff.create({
+      data: {
+        displayName,
+        username,
+        password,
+        sessionToken,
+        role: 'officer',
+        checkpoints: {
+          connect: { id: checkpointId }
+        }
+      }
+    });
+  }
+
+  revalidatePath('/admin/badges');
+  revalidatePath('/admin/officers');
+}
+
+export async function linkExistingOfficer(formData: FormData) {
+  const officerId = formData.get('officerId') as string;
+  const checkpointId = formData.get('checkpointId') as string;
+
+  if (!officerId || !checkpointId) {
+    throw new Error('Officer ID and Checkpoint ID are required');
+  }
+
+  await prisma.staff.update({
+    where: { id: officerId },
     data: {
-      displayName,
-      username,
-      password,
-      checkpointId,
-      sessionToken,
-      role: 'officer'
+      checkpoints: {
+        connect: { id: checkpointId }
+      }
     }
   });
 
-  revalidatePath('/admin');
+  revalidatePath('/admin/badges');
+  revalidatePath('/admin/officers');
 }
 
 export async function addCheckpoint(formData: FormData) {
@@ -101,7 +139,7 @@ export async function addCheckpoint(formData: FormData) {
     }
   });
 
-  revalidatePath('/admin');
+  revalidatePath('/admin/badges');
 }
 
 export async function updateCheckpoint(formData: FormData) {
@@ -123,7 +161,7 @@ export async function updateCheckpoint(formData: FormData) {
     }
   });
 
-  revalidatePath('/admin');
+  revalidatePath('/admin/badges');
 }
 
 export async function removeCheckpoint(formData: FormData) {
@@ -135,7 +173,7 @@ export async function removeCheckpoint(formData: FormData) {
     where: { id: checkpointId }
   });
 
-  revalidatePath('/admin');
+  revalidatePath('/admin/badges');
 }
 
 export async function addRecruit(formData: FormData) {
@@ -181,7 +219,8 @@ export async function addRecruit(formData: FormData) {
       }
     });
 
-    revalidatePath('/admin');
+    revalidatePath('/admin/badges');
+    revalidatePath('/admin/officers');
     return { success: true };
   } catch (err: any) {
     return { error: `เกิดข้อผิดพลาดในการลงทะเบียน: ${err.message || String(err)}` };
@@ -344,6 +383,37 @@ export async function bulkImportRecruits(formData: FormData) {
   }
 }
 
+export async function createOfficer(formData: FormData) {
+  const displayName = formData.get('displayName') as string;
+  const username = formData.get('username') as string;
+  const password = formData.get('password') as string;
+
+  if (!displayName || !username || !password) {
+    throw new Error('All fields are required');
+  }
+
+  const existingStaff = await prisma.staff.findUnique({
+    where: { username }
+  });
+
+  if (existingStaff) {
+    throw new Error('Username already taken');
+  }
+
+  const sessionToken = crypto.randomBytes(16).toString('hex');
+  await prisma.staff.create({
+    data: {
+      displayName,
+      username,
+      password,
+      sessionToken,
+      role: 'officer'
+    }
+  });
+
+  revalidatePath('/admin/officers');
+}
+
 export async function updateOfficer(formData: FormData) {
   const officerId = formData.get('officerId') as string;
   const displayName = formData.get('displayName') as string;
@@ -365,10 +435,10 @@ export async function updateOfficer(formData: FormData) {
     data
   });
 
-  revalidatePath('/admin');
+  revalidatePath('/admin/officers');
 }
 
-export async function removeOfficer(formData: FormData) {
+export async function deleteOfficer(formData: FormData) {
   const officerId = formData.get('officerId') as string;
 
   if (!officerId) throw new Error('Officer ID is required');
@@ -377,7 +447,27 @@ export async function removeOfficer(formData: FormData) {
     where: { id: officerId }
   });
 
-  revalidatePath('/admin');
+  revalidatePath('/admin/officers');
+  revalidatePath('/admin/badges');
+}
+
+export async function removeOfficer(formData: FormData) {
+  const officerId = formData.get('officerId') as string;
+  const checkpointId = formData.get('checkpointId') as string;
+
+  if (!officerId || !checkpointId) throw new Error('Officer ID and Checkpoint ID are required');
+
+  await prisma.staff.update({
+    where: { id: officerId },
+    data: {
+      checkpoints: {
+        disconnect: { id: checkpointId }
+      }
+    }
+  });
+
+  revalidatePath('/admin/badges');
+  revalidatePath('/admin/officers');
 }
 
 export async function broadcastAnnouncement(formData: FormData) {
@@ -516,5 +606,3 @@ export async function rerollAllRooms() {
     return { error: `เกิดข้อผิดพลาดในการสุ่มห้องใหม่: ${err.message || String(err)}` };
   }
 }
-
-
