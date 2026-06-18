@@ -69,7 +69,7 @@ export default async function AdminDashboardOverview() {
                 <p className="text-2xl font-playfair font-bold text-passport-navy">
                   {totalBadges} <span className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-wider">Badges</span> &middot; {totalAttendance} <span className="text-xs font-sans font-bold text-muted-sepia uppercase tracking-wider">Days</span>
                 </p>
-                <Link href="/admin/districts" className="text-xs font-sans font-bold text-district-ice hover:underline mt-3 inline-block uppercase tracking-wider">Manage Badges →</Link>
+                <Link href="/admin/badges" className="text-xs font-sans font-bold text-district-ice hover:underline mt-3 inline-block uppercase tracking-wider">Manage Badges →</Link>
               </div>
               
               <div className="bg-white/60 p-5 rounded-xl border-l-4 border-l-district-lavender shadow-sm border border-paper-border hover:-translate-y-1 transition-transform">
@@ -87,6 +87,7 @@ export default async function AdminDashboardOverview() {
                   <p className="text-xs text-sepia-ink font-sans font-bold uppercase tracking-widest">Officers</p>
                 </div>
                 <p className="text-4xl font-playfair font-bold text-passport-navy">{totalOfficers}</p>
+                <Link href="/admin/officers" className="text-xs font-sans font-bold text-district-amber hover:underline mt-3 inline-block uppercase tracking-wider">Manage Officers →</Link>
               </div>
 
               <div className="bg-white/60 p-5 rounded-xl border-l-4 border-l-verified-green shadow-sm border border-paper-border hover:-translate-y-1 transition-transform">
