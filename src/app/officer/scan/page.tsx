@@ -17,10 +17,11 @@ export default async function OfficerScanPage() {
     where: { sessionToken: session.token },
     include: { 
       checkpoints: { 
+        orderBy: { createdAt: 'asc' },
         include: { 
           hunt: {
             include: {
-              checkpoints: { orderBy: { order: 'asc' } }
+              checkpoints: { orderBy: { createdAt: 'asc' } }
             }
           } 
         } 

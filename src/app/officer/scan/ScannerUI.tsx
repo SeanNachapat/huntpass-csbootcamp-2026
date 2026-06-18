@@ -307,10 +307,18 @@ export default function ScannerUI({
       {/* Google Wallet Style Carousel */}
       {status === 'scanning' && checkpoints.length > 0 && (
         <div className="w-full relative mb-4">
+          {/* Unified Active Hunt Label (displayed once above cards) */}
+          <div className="text-center mb-2 animate-in fade-in duration-200">
+            <span className="text-[8px] font-mono font-bold text-seal-gold/50 uppercase tracking-widest leading-none">Active Case Mission</span>
+            <h2 className="text-xs font-sarabun font-bold text-passport-ivory tracking-wide leading-none mt-1 opacity-85">
+              {activeCheckpoint?.hunt?.name || checkpoints[0]?.hunt?.name}
+            </h2>
+          </div>
+
           <div 
             ref={carouselRef}
             onScroll={handleCarouselScroll}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-12 py-3 w-full scrollbar-none scroll-smooth items-center min-h-[140px]"
+            className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-12 py-2.5 w-full scrollbar-none scroll-smooth items-center min-h-[90px]"
           >
             {checkpoints.map((cp, idx) => {
               const color = getCheckpointColor(cp);
@@ -320,39 +328,28 @@ export default function ScannerUI({
                   key={cp.id}
                   onClick={() => selectCard(idx)}
                   className={`
-                    snap-center shrink-0 w-[240px] sm:w-[270px] aspect-[1.586/1] rounded-2xl p-4 border flex flex-col justify-between relative shadow-lg transition-all duration-300 cursor-pointer select-none
+                    snap-center shrink-0 w-[180px] sm:w-[200px] rounded-full py-2 px-3.5 border flex items-center gap-3 relative shadow-md transition-all duration-300 cursor-pointer select-none
                     ${isActive 
-                      ? 'scale-105 bg-passport-navy text-white shadow-2xl border-[3px]' 
+                      ? 'scale-105 bg-passport-navy text-white shadow-xl border-2' 
                       : 'scale-95 border-paper-border bg-passport-ivory paper-texture text-sepia-ink opacity-40'}
                   `}
                   style={isActive ? { borderColor: color } : {}}
                 >
-                  <div className="absolute inset-0 paper-texture opacity-[0.03] mix-blend-overlay pointer-events-none rounded-2xl"></div>
+                  <div className="absolute inset-0 paper-texture opacity-[0.03] mix-blend-overlay pointer-events-none rounded-full"></div>
                   
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-2xl bg-white/10 w-9 h-9 flex items-center justify-center rounded-lg">{cp.zootopiaIcon || '📍'}</span>
-                      <div className="text-left">
-                        <p className={`font-playfair font-bold text-xs leading-tight truncate max-w-[120px] ${isActive ? 'text-passport-ivory' : 'text-passport-navy'}`}>{cp.name}</p>
-                        <p className="font-mono text-[7px] tracking-widest text-seal-gold/80 uppercase mt-0.5">ZPD Scanner Badge</p>
-                      </div>
-                    </div>
-                    <span className={`px-2 py-0.5 rounded text-[7px] font-sans font-bold uppercase tracking-wider ${cp.type === 'daily_attendance' ? 'bg-amber-600/20 text-amber-500 border border-amber-500/30' : 'bg-green-600/20 text-green-500 border border-green-500/30'}`}>
+                  {/* Left: Icon in a circle */}
+                  <span className="text-xl bg-white/10 w-8 h-8 flex items-center justify-center rounded-full shrink-0 shadow-inner">
+                    {cp.zootopiaIcon || '📍'}
+                  </span>
+                  
+                  {/* Right: Text details */}
+                  <div className="text-left min-w-0 flex-grow">
+                    <p className={`font-sarabun font-bold text-xs leading-tight truncate ${isActive ? 'text-passport-ivory' : 'text-passport-navy'}`}>
+                      {cp.name}
+                    </p>
+                    <span className="text-[7px] font-mono uppercase tracking-wider text-seal-gold/80 block mt-0.5 leading-none">
                       {cp.type === 'daily_attendance' ? '📅 Attendance' : '🛡️ Badge'}
                     </span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-white/10 pt-2.5">
-                    <div className="text-left">
-                      <p className="text-[6px] font-sans font-bold text-muted-sepia uppercase tracking-widest leading-none mb-1">Assigned Hunt</p>
-                      <p className="text-[9px] font-sarabun font-bold text-seal-gold leading-none truncate max-w-[130px]">{cp.hunt.name}</p>
-                    </div>
-                    
-                    {isActive && (
-                      <div className="flex items-center gap-1 bg-seal-gold text-passport-navy px-2 py-0.5 rounded-full text-[8px] font-bold animate-pulse">
-                        <div className="w-1 h-1 rounded-full bg-passport-navy"></div> active
-                      </div>
-                    )}
                   </div>
                 </div>
               );

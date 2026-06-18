@@ -15,7 +15,7 @@ export default async function BadgesPage() {
   const hunts = await prisma.hunt.findMany({
     include: {
       checkpoints: {
-        orderBy: { order: 'asc' }
+        orderBy: { createdAt: 'asc' }
       }
     }
   });

@@ -25,6 +25,7 @@ model Checkpoint {
   order         Int?     @default(0)
   hint          String?
   type          String   @default("badge")
+  createdAt     DateTime @default(now())
   hunt          Hunt     @relation(fields: [huntId], references: [id], onDelete: Cascade)
   stamps        Stamp[]
   officers      Staff[]
